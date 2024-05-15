@@ -2,7 +2,7 @@
 
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, SetStateAction } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { styled } from '@mui/joy';
@@ -21,14 +21,14 @@ const VisuallyHiddenInput = styled('input')`
   width: 1px;
 `;
 
-const CreateEvent = ({ visible, onClose }) => {
-
-  const [showCalendar, setShowCalendar] = useState(false);
+const CreateEvent = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+  const [showEndCalendar, setShowEndCalendar] = useState(false);
+  const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [formData, setFormData] = useState({
     eventName: "",
     eventType: "One-Time",
     eventDescription: "",
-    department:"CEA",
+    department: "CEA",
     startDate: null as Date | null,
     startTime: null as Date | null,
     endDate: null as Date | null,
@@ -38,7 +38,7 @@ const CreateEvent = ({ visible, onClose }) => {
     eventEnds: null as Date | null,
   });
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
     setFormData({
@@ -90,15 +90,6 @@ const CreateEvent = ({ visible, onClose }) => {
       });
     }
   };
-
-  const toggleCalendar = (type: string | boolean | ((prevState: boolean) => boolean)) => {
-    if (showCalendar === type) {
-      setShowCalendar(false);
-    } else {
-      setShowCalendar(type);
-    }
-  };
-
   const [secFormData, setSecFormData] = useState(new FormData());
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -116,12 +107,12 @@ const CreateEvent = ({ visible, onClose }) => {
         });
       }
     };
-  
+
     if (file) {
       const newSecFormData = new FormData();
       newSecFormData.append('eventImage', file);
       setSecFormData(newSecFormData);
-  
+
       reader.readAsDataURL(file);
     } else {
       setFormData({
@@ -132,7 +123,7 @@ const CreateEvent = ({ visible, onClose }) => {
     }
   };
 
-  
+
 
   const createEvent = async () => {
     const eventStarts = formData.startDate && formData.startTime
@@ -251,9 +242,9 @@ const CreateEvent = ({ visible, onClose }) => {
                 src="/calendar.png"
                 alt="Calendar"
                 className="absolute top-0 right-20 m-2 cursor-pointer w-[15px] mr-[30rem]"
-                onClick={() => toggleCalendar('start')}
+                onClick={() => setShowStartCalendar(true)}
               />
-              {showCalendar === 'start' && (
+              {showStartCalendar && (
                 <div className="absolute top-full w-[5rem] h-[32px] -left-1 -mt-3 p-4">
                   <DatePicker
                     selected={formData.startDate}
@@ -294,9 +285,9 @@ const CreateEvent = ({ visible, onClose }) => {
                 src="/calendar.png"
                 alt="Calendar"
                 className="absolute top-0 right-[254px] m-2 cursor-pointer w-[15px] mr-[8rem]"
-                onClick={() => toggleCalendar('end')}
+                onClick={() => setShowEndCalendar(true)}
               />
-              {showCalendar === 'end' && (
+              {showEndCalendar && (
                 <div className="absolute top-full w-[5rem] h-[32px] -left-1 -mt-3 p-4">
                   <DatePicker
                     selected={formData.endDate}
@@ -320,7 +311,7 @@ const CreateEvent = ({ visible, onClose }) => {
           </div>
         </div>
 
-        
+
         <div className=' font-bold -mt-[25rem] ' >
           <Button onClick={onClose} style={{ color: 'black', fontSize: '25px', marginLeft: '43rem' }}>X</Button>
           <div className="grid grid-cols-1 gap-5">
@@ -359,7 +350,7 @@ const CreateEvent = ({ visible, onClose }) => {
                     marginRight: '-1.5rem',
                     outline: 'none'
                   }}
-                  onClick={() => fileInputRef.current.click()}
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
                 >
                   Upload Event Picture
                 </Button>

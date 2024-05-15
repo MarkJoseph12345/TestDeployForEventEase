@@ -17,7 +17,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { API_ENDPOINTS } from '../api';
 
-const EventPopup = ({ event, onClose }) => {
+const EventPopup =  ({ event, onClose }: { event: EventCard; onClose: () => void }) => {
     return (
         <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center backdrop-blur-[4px] z-50">
             <div className="bg-white p-8 rounded-3xl relative flex flex-col items-center">
