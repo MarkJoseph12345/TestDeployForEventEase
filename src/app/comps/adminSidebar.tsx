@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 //import { withAuth } from '../protection';
-import CreateEvent from '../createevent/page';
+import CreateEventModal from '../createevent/page';
 
 
 const AdminSideBar = () => {
@@ -38,7 +38,7 @@ const AdminSideBar = () => {
           <img src="/plusicon.png" alt="Plus Icon" className="w-6 h-6 -ml-2.5" />
           <span className="text-white font-regular  font-poppins text-[13px] ml-[3px]">Create Event</span>
         </button>
-        {isModalOpen && <CreateEvent visible={isModalOpen} onClose={handleModalClose} />}
+        <CreateEventModal visible={isModalOpen} onClose={handleModalClose} />
         <button className='mt-5 ml-[4rem]'>Home</button>
         <button onClick={handleLogout} className="absolute bottom-5 left-1/2 transform -translate-x-1/2">Log out</button>
       </div>

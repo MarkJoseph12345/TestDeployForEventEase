@@ -78,7 +78,7 @@ const AdminDashboard = () => {
                     )}
                 </div>
                 <div className='bg-customWhite ml-[2rem] flex-1 mt-[2.6rem]'>
-                    <p className='mt-20 ml-10 text-2xl font-bold'>Today's Events!</p>
+                    <p className='mt-20 ml-10 text-2xl font-bold'>Today&apos;s Events!</p>
                     <AdminEventCards />
                 </div>
                

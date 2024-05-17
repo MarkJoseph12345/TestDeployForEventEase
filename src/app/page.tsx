@@ -68,23 +68,16 @@ const Home = () => {
             description: event.eventDescription,
           };
         });
-
-
         setHomePageCards(updatedHomePageCards);
 
+        const completedEvents = allEvents.filter((event: { endDate: string | number | Date; }) => new Date(event.endDate) < new Date());
 
-        const closestEvent = eventsForThisWeek.reduce((closest: { eventStarts: string | number | Date; }, event: { eventStarts: string | number | Date; }) => {
-          const eventStartTime = new Date(event.eventStarts).getTime();
-          const closestStartTime = new Date(closest.eventStarts).getTime();
-          const currentTime = new Date().getTime();
-          const eventTimeDifference = Math.abs(eventStartTime - currentTime);
-          const closestTimeDifference = Math.abs(closestStartTime - currentTime);
-
-          return eventTimeDifference < closestTimeDifference ? event : closest;
-        }, eventsForThisWeek[0]);
+        completedEvents.sort((a: { endDate: string | number | Date }, b: { endDate: string | number | Date }) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime());
+   
+        const latestCompletedEventId = completedEvents[0].id;
 
         try {
-          const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${closestEvent.id}`, {
+          const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${latestCompletedEventId}`, {
             responseType: 'arraybuffer'
           });
           if (imgResponse.status >= 200 && imgResponse.status < 300) {
@@ -94,7 +87,7 @@ const Home = () => {
             console.error('Failed to fetch image for closest event');
           }
         } catch (error) {
-          console.error(`Error fetching image for closest event with ID ${closestEvent.id}:`, error);
+          console.error("Error retrieving image:", error);
         }
 
       } else {
@@ -110,7 +103,7 @@ const Home = () => {
     fetchData(days[startIndex]);
   }, []);
 
-  
+
 
 
 
@@ -119,10 +112,10 @@ const Home = () => {
       <NavBar />
       <img src="/wil4.png" className="h-[55vh] w-full max-w-full" />
       <div className="mx-[3%] my-[1%]">
-        <p className="font-poppins font-bold mt-8 text-xl">Latest Events!</p>
+        <p className="font-poppins font-bold mt-8 text-xl">Latest Event!</p>
         <div className="my-[1%] py-[3%] grid justify-center border p-10 rounded-3xl relative lg:flex lg:justify-between">
-          <div className=" rounded-lg" >
-            <img src={closestEventImageUrl} className="object-cover rounded-lg w-full h-full" />
+          <div>
+            <img src={closestEventImageUrl} className="object-cover rounded-lg h-[275px] w-[275px]" />
           </div>
           <div className="py-16 gap-6 flex flex-col items-center lg:items-start">
             <div className="flex items-center">

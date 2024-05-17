@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StudentSideBar from '../comps/studentSidebar';
 import StudentEventCards from '../comps/studentEventCards';
 
 const StudentDashboard = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [activeItem, setActiveItem] = useState("In Progress");
-    const name = localStorage.getItem("name")
+
+
+    const [userName, setUserName] = useState('')
+
+    useEffect(() => {
+        const name = window.localStorage.getItem('name');
+        if (name) {
+            setUserName(name)
+        }
+    }, []);
+
+
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
@@ -20,9 +31,9 @@ const StudentDashboard = () => {
             </div>
             <div className='flex flex-col flex-1 h-full'>
                 <div className="flex flex-col  justify-end min-h-[300px] pl-8 -mt-[3rem] mb-16">
-                    <p className=' absolute ml-3 text-4xl font-bold'>WELCOME, {name}!</p>
+                    <p className=' absolute ml-3 text-4xl font-bold'>WELCOME, {userName}!</p>
                     <div >
-                    <p className='absolute mt-[.1rem] ml-4 text-sm'>EventEase a portal for discovering and exploring university events.</p>
+                        <p className='absolute mt-[.1rem] ml-4 text-sm'>EventEase a portal for discovering and exploring university events.</p>
                     </div>
                 </div>
                 <div className='absolute top-0 right-0 flex items-end justify-center flex-col mr-32 mt-14'>
@@ -79,10 +90,10 @@ const StudentDashboard = () => {
                     )}
                 </div>
                 <div className='bg-customWhite ml-[2rem] flex-1 mt-[2.6rem]'>
-                    <p className='mt-20 ml-10 text-2xl font-bold'>Today's Events!</p>
+                    <p className='mt-20 ml-10 text-2xl font-bold'>Today&apos;s Events!</p>
                     <StudentEventCards />
                 </div>
-               
+
             </div>
         </div>
     );

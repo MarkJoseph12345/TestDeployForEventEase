@@ -1,18 +1,8 @@
-'use client'
-import React from 'react';
-import StudentDashboard from './studentDashboard';
-import AdminDashboard from './adminDashboard';
-import { withAuth } from '../protection.js';
+import DashboardFunction from "./dashboardFunction";
+
 
 const Dashboard = () => {
-  const userRole = localStorage.getItem("role")
+  return <DashboardFunction />
+}
 
-  return (
-    <div className="max-w-[2000px] relative mx-auto">
-      {userRole === 'STUDENT' && <StudentDashboard />}
-      {userRole === 'ADMIN' && <AdminDashboard />}
-    </div>
-  );
-};
-
-export default withAuth(Dashboard);
+export default Dashboard;

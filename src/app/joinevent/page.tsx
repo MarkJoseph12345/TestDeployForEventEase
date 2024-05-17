@@ -5,7 +5,7 @@ import Modal from '@mui/material/Modal';
 import Button from '@mui/material/Button';
 
 
-const JoinEventModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+const JoinEventModal = ({ visible, onClose }: any) => {
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearchChange = (e: any) => {

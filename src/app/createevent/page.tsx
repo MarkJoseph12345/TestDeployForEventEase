@@ -2,7 +2,7 @@
 
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
-import React, { useState, useRef, SetStateAction } from 'react';
+import React, { useState, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { styled } from '@mui/joy';
@@ -21,7 +21,8 @@ const VisuallyHiddenInput = styled('input')`
   width: 1px;
 `;
 
-const CreateEvent = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+
+const CreateEventModal = ({ visible, onClose }: any) => {
   const [showEndCalendar, setShowEndCalendar] = useState(false);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [formData, setFormData] = useState({
@@ -125,7 +126,7 @@ const CreateEvent = ({ visible, onClose }: { visible: boolean; onClose: () => vo
 
 
 
-  const createEvent = async () => {
+  const createEventFunction = async () => {
     const eventStarts = formData.startDate && formData.startTime
       ? new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startTime.getHours(), formData.startTime.getMinutes(), formData.startTime.getSeconds())
       : null;
@@ -358,7 +359,7 @@ const CreateEvent = ({ visible, onClose }: { visible: boolean; onClose: () => vo
             </div>
 
             <div className='ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEvent() }}>CREATE</Button>
+              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }}>CREATE</Button>
             </div>
 
           </div>
@@ -368,4 +369,6 @@ const CreateEvent = ({ visible, onClose }: { visible: boolean; onClose: () => vo
   );
 };
 
-export default CreateEvent;
+
+
+export default CreateEventModal;
