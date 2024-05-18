@@ -137,8 +137,8 @@ const Home = () => {
             </div>
           </div>
           <div className="flex">
-            <div className="flex flex-col">
-              <p className="font-semibold text-2xl">Happening this week</p>
+            <div className="flex flex-col gap-3">
+              <p className="font-semibold text-2xl">Happening this week!</p>
               <div className="flex justify-center gap-3">
                 <button onClick={handleBack} className="text-base font-bold">&lt;</button>
                 {days.slice(startIndex === days.length - 1 ? startIndex - 1 : startIndex, startIndex + 2).map((day, index) => (
