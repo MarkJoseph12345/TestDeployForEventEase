@@ -76,7 +76,7 @@ const Login = () => {
                     </div>
                     <div className="w-4/6 flex flex-col gap-4">
                         <div>
-                            <p className="font-poppins text-sm">Username/Email Address<span className="text-red-800">*</span></p>
+                            <p className="font-poppins text-sm font-bold">Username/Email Address<span className="text-red-800">*</span></p>
                             <input
                                 type="text"
                                 name="username"
@@ -88,7 +88,7 @@ const Login = () => {
                             />
                         </div>
                         <div>
-                            <p className="font-poppins text-sm">Password<span className="text-red-800">*</span></p>
+                            <p className="font-poppins text-sm font-bold">Password<span className="text-red-800">*</span></p>
                             <div className="relative box-border">
                                 <input
                                     type={showLoginPassword ? "text" : "password"}
