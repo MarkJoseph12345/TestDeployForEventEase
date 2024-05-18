@@ -7,4 +7,5 @@ export const API_ENDPOINTS = {
     UPDATE_EVENT: `${BASE_URL}/api/v1/auth/event/updateEventPicture/`,
     GET_ALL_EVENTS: `${BASE_URL}/api/v1/auth/event/getAllEvents`,
     GET_EVENT_PICTURE: `${BASE_URL}/api/v1/auth/event/getEventPicture/`,
+    GET_EVENT_BY_ID: `${BASE_URL}/api/v1/auth/event/getEventById/`,
   };

@@ -21,6 +21,16 @@ const VisuallyHiddenInput = styled('input')`
   width: 1px;
 `;
 
+interface FormErrors {
+  eventName?: string;
+  eventType?: string;
+  eventDescription?: string;
+  department?: string;
+  selectedFile?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 
 const CreateEventModal = ({ visible, onClose }: any) => {
   const [showEndCalendar, setShowEndCalendar] = useState(false);
@@ -42,6 +52,27 @@ const CreateEventModal = ({ visible, onClose }: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
+
+    const { name, value } = e.target;
+    let errorMessage = '';
+
+    switch (name) {
+      case 'eventName':
+        errorMessage = !value.trim() ? 'Event name is required' : '';
+        break;
+      case 'eventDescription':
+        errorMessage = !value.trim() ? 'Event description is required' : '';
+        break;
+      default:
+        errorMessage = '';
+    }
+
+    setFormErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: errorMessage
+    }));
+
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -65,6 +96,37 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
   const handleDateChange = (date: Date | null, type: string) => {
+    // Validate the selected date
+    if (!date) {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        [type === 'start' ? 'startDate' : 'endDate']: 'Please select a valid date'
+      }));
+    } else {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        [type === 'start' ? 'startDate' : 'endDate']: ''
+      }));
+    }
+
+    // Check if the selected date is before the current date
+    const currentDate = new Date();
+    if (type === 'start' && date && date < currentDate) {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        startDate: 'Start date cannot be before the current date'
+      }));
+    }
+
+    // Check if the end date is before the start date
+    if (type === 'end' && date && formData.startDate && date < formData.startDate) {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        endDate: 'End date cannot be before the start date'
+      }));
+    }
+
+    // Update formData with the new date value
     if (type === 'start') {
       setFormData({
         ...formData,
@@ -79,6 +141,20 @@ const CreateEventModal = ({ visible, onClose }: any) => {
   };
 
   const handleTimeChange = (time: Date | null, type: string) => {
+    // Validate the selected time
+    if (!time) {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        [type === 'start' ? 'startTime' : 'endTime']: 'Please select a valid time'
+      }));
+    } else {
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        [type === 'start' ? 'startTime' : 'endTime']: ''
+      }));
+    }
+
+    // Update formData with the new time value
     if (type === 'start') {
       setFormData({
         ...formData,
@@ -91,6 +167,9 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       });
     }
   };
+
+
+
   const [secFormData, setSecFormData] = useState(new FormData());
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -125,8 +204,23 @@ const CreateEventModal = ({ visible, onClose }: any) => {
   };
 
 
+  const [loading, setLoading] = useState(false);
+
 
   const createEventFunction = async () => {
+    const requiredErrorMessages: FormErrors = {
+      eventName: !formData.eventName ? 'Event name is required' : '',
+      eventDescription: !formData.eventDescription ? 'Event description is required' : '',
+      selectedFile: !selectedFile ? 'File is required' : '',
+    };
+    setLoading(true);
+
+    if (!formData.eventName || !formData.eventDescription || !formData.startDate || !formData.startTime || !formData.endDate || !formData.endTime || !selectedFile) {
+      setFormErrors(requiredErrorMessages)
+      setLoading(false);
+      return;
+    }
+
     const eventStarts = formData.startDate && formData.startTime
       ? new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startTime.getHours(), formData.startTime.getMinutes(), formData.startTime.getSeconds())
       : null;
@@ -156,8 +250,14 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       window.location.reload();
     } catch (error) {
       console.error("Error creating event:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+
 
   return (
     <Modal
@@ -166,7 +266,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       className="backdrop-blur-[4px]"
     >
       <div
-        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] h-[26.5rem] relative'
+        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] relative'
         style={{ backgroundImage: "url('/inno.png')", backgroundSize: 'cover' }}
       >
         <h2 className='text-lg font-bold -mt-4 p-4'>Create Event</h2>
@@ -182,6 +282,11 @@ const CreateEventModal = ({ visible, onClose }: any) => {
               onChange={handleInputChange}
               className="p-2 w-[20rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[12px]"
             />
+            {formErrors.eventName && (
+              <p className="text-red-800 text-xs font-poppins">
+                {formErrors.eventName}
+              </p>
+            )}
           </div>
 
           <div className="relative p-5 -mt-7">
@@ -206,6 +311,12 @@ const CreateEventModal = ({ visible, onClose }: any) => {
               onChange={handleInputChange}
               className="p-2 w-[20rem] h-[60px] rounded-2xl border-[1.5px] border-black resize-none text-[12px]"
             />
+
+            {formErrors.eventDescription && (
+              <p className="text-red-800 text-xs font-poppins">
+                {formErrors.eventDescription}
+              </p>
+            )}
           </div>
 
           <div className="relative p-5 -mt-10">
@@ -225,8 +336,15 @@ const CreateEventModal = ({ visible, onClose }: any) => {
               <option value="ALL">ALL</option>
             </select>
           </div>
+          
           <div className="relative p-5 -mt-7">
-            <p className="font-poppins text-sm font-regular -mt-6">Start Date <span className="text-red-800">*</span></p>
+            <p className="font-poppins text-sm font-regular -mt-6 ">Start Date <span className="text-red-800">*</span></p>
+            {/* {formErrors.startDate && (
+              <p className="text-red-800 text-xs font-poppins w-40">
+                {formErrors.startDate}
+              </p>
+            )} */}
+            {/*Ayuha ni maguba ig butang sa error*/}
             <div className="relative">
               <input
                 type='text'
@@ -270,6 +388,12 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
           <div className="relative p-5 -mt-[5.5rem] ml-[11rem]">
             <p className="font-poppins text-sm font-regular -mt-6">End Date <span className="text-red-800">*</span></p>
+            {/* {formErrors.endDate && (
+              <p className="text-red-800 text-xs font-poppins text-balance w-40">
+                {formErrors.endDate}
+              </p>
+            )} */}
+            {/*Ayuha ni maguba ig butang sa error*/}
             <div className="relative">
               <input
                 type='text'
@@ -359,7 +483,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
             </div>
 
             <div className='ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }}>CREATE</Button>
+              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "CREATING..." : "CREATE"}</Button>
             </div>
 
           </div>
