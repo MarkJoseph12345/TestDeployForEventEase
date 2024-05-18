@@ -66,7 +66,7 @@ const Login = () => {
     };
     return (
         <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] h-screen w-screen flex items-center lg:justify-end justify-center lg:px-60">
-           <div className={`h-[400px] w-[450px] bg-black rounded-2xl lg:p-6 p-4  `}>
+           <div className={`h-[400px] w-[450px] bg-black rounded-2xl lg:p-6 p-4  absolute top-[10%]`}>
                 <form onSubmit={handleLoginSubmit} method="post" className="bg-customYellow w-full h-full flex flex-col items-center gap-3 justify-between py-3 ">
                     <div className="flex flex-col items-center">
                         <h1 className="text-4xl font-extrabold">WELCOME!</h1>
