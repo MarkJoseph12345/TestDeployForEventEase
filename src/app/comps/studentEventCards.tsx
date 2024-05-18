@@ -69,16 +69,15 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
 };
 
 const StudentEventCards = () => {
-
-  
-
-    const [adminPageCards, setAdminPageCards] = useState<EventCard[]>([]);
+    const [studentPageCards, setStudentPageCards] = useState<EventCard[]>([]);
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(API_ENDPOINTS.GET_ALL_EVENTS);
                 if (response.status >= 200 && response.status < 300) {
                     const data = response.data;
+                    const today = new Date();
+                    const todayDateString = today.toISOString().split('T')[0];
                     const cardsWithPictures = await Promise.all(data.map(async (event: any) => {
                         try {
                             const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${event.id}`, {
@@ -104,7 +103,13 @@ const StudentEventCards = () => {
                             return event;
                         }
                     }));
-                    setAdminPageCards(cardsWithPictures);
+
+                    const todayEvents = cardsWithPictures.filter((event: any) => {
+                        const eventDate = new Date(event.eventStarts).toISOString().split('T')[0];
+                        return eventDate === todayDateString;
+                    });
+
+                    setStudentPageCards(todayEvents);
                 } else {
                     throw new Error('Failed to fetch data');
                 }
@@ -120,11 +125,11 @@ const StudentEventCards = () => {
     return (
         <div className="relative">
             <div className="grid grid-cols-3 gap-4 max-w-[90%] mx-auto">
-                {adminPageCards.map((card, index) => (
+                {studentPageCards.map((card, index) => (
                     <div key={index} className="border p-8 rounded-lg flex flex-col items-start gap-4 shadow-xl relative">
                         <div className='self-center relative'>
-                            <img className="self-center h-[250px] w-[250px] object-fill" src={card.eventPicture} />
-                            <div className="absolute -mt-5 -ml-5 top-0 left-0 bg-customYellow rounded-full text-2xl w-20 h-20 font-bold flex justify-center items-center text-center flex-col">
+                            <img className="self-center h-[10.938rem] w-[15.625rem] object-fill" src={card.eventPicture} />
+                            <div className="absolute -mt-5 -ml-5 top-0 left-0 bg-customYellow rounded-full text-base w-16 h-16 font-bold flex justify-center items-center text-center flex-col">
                                 <div>{new Date(card.eventStartsDate).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
                                 <div>{new Date(card.eventStartsDate).getDate()}</div>
                             </div>
@@ -138,7 +143,7 @@ const StudentEventCards = () => {
                             </div>
                         </div>
                         <div className='self-end'>
-                            <button className='font-bold rounded px-3 py-1 bg-customYellow' >Join</button>
+                            <button className='font-bold rounded px-3 py-1 bg-customYellow'>Join</button>
                         </div>
                     </div>
                 ))}

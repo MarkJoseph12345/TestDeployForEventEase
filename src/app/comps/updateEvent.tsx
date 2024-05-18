@@ -29,17 +29,19 @@ interface FormErrors {
   selectedFile?: string;
   startDate?: string;
   endDate?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 
-const CreateEventModal = ({ visible, onClose }: any) => {
+const updateEventModal = ({ visible, onClose }: any) => {
   const [showEndCalendar, setShowEndCalendar] = useState(false);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [formData, setFormData] = useState({
     eventName: "",
-    eventType: "One-Time",
+    eventType: "",
     eventDescription: "",
-    department: "CEA",
+    department: "",
     startDate: null as Date | null,
     startTime: null as Date | null,
     endDate: null as Date | null,
@@ -221,14 +223,48 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       return;
     }
 
-    const eventStarts = formData.startDate && formData.startTime
-      ? new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startTime.getHours(), formData.startTime.getMinutes(), formData.startTime.getSeconds())
-      : null;
 
-    const eventEnds = formData.endDate && formData.endTime
-      ? new Date(formData.endDate.getFullYear(), formData.endDate.getMonth(), formData.endDate.getDate(), formData.endTime.getHours(), formData.endTime.getMinutes(), formData.endTime.getSeconds())
-      : null;
+    const eventStarts = new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startTime.getHours(), formData.startTime.getMinutes(), formData.startTime.getSeconds())
 
+
+    const eventEnds = new Date(formData.endDate.getFullYear(), formData.endDate.getMonth(), formData.endDate.getDate(), formData.endTime.getHours(), formData.endTime.getMinutes(), formData.endTime.getSeconds())
+
+    const currentDateTime = new Date();
+    if (eventStarts <= currentDateTime) {
+      setFormErrors({
+        ...requiredErrorMessages,
+        startDate: "Start date and time must be in the future",
+        startTime: "Start date and time must be in the future",
+      });
+      console.log("Start time")
+      setLoading(false);
+      return;
+    }
+    else{
+      setFormErrors({
+        ...requiredErrorMessages,
+        startDate: "",
+        startTime: "",
+      });
+    }
+
+    if (eventEnds <= eventStarts) {
+      setFormErrors({
+        ...requiredErrorMessages,
+        endDate: "End date must be after start date",
+        endTime: "End time must be after start time",
+      });
+      console.log("End time")
+      setLoading(false);
+      return;
+    }
+    else{
+      setFormErrors({
+        ...requiredErrorMessages,
+        endDate: "",
+        endTime: "",
+      });
+    }
     const { eventPicture, ...formDataWithoutPicture } = formData;
 
     const updatedFormData = {
@@ -243,7 +279,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       const id = response.data.id;
 
       if (selectedFile) {
-        console.log(`${API_ENDPOINTS.UPDATE_EVENT}${id}`, secFormData);
+        console.log(`image: ${API_ENDPOINTS.UPDATE_EVENT}${id}`, secFormData);
         const pictureResponse = await axios.put(`${API_ENDPOINTS.UPDATE_EVENT}${id}`, secFormData);
         console.log("Image upload successful:", pictureResponse.data);
       }
@@ -336,7 +372,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
               <option value="ALL">ALL</option>
             </select>
           </div>
-          
+
           <div className="relative p-5 -mt-7">
             <p className="font-poppins text-sm font-regular -mt-6 ">Start Date <span className="text-red-800">*</span></p>
             {/* {formErrors.startDate && (
@@ -438,7 +474,14 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
         <div className=' font-bold -mt-[25rem] ' >
-          <Button onClick={onClose} style={{ color: 'black', fontSize: '25px', marginLeft: '43rem' }}>X</Button>
+          <Button
+            onClick={() => {
+              onClose();
+              setFormErrors({});
+              setShowStartCalendar(false);
+              setShowEndCalendar(false);
+            }} style={{ color: 'black', fontSize: '25px', marginLeft: '43rem' }}>X</Button>
+
           <div className="grid grid-cols-1 gap-5">
 
             <div className="relative p-5 mt-[1rem] ml-[28.5rem] rounded-2xl border-[2px] border-customYellow" style={{ width: '12rem', height: '12rem' }}>
@@ -481,11 +524,9 @@ const CreateEventModal = ({ visible, onClose }: any) => {
                 </Button>
               </div>
             </div>
-
             <div className='ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
               <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "CREATING..." : "CREATE"}</Button>
             </div>
-
           </div>
         </div>
       </div>
@@ -495,4 +536,4 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
 
-export default CreateEventModal;
+export default updateEventModal;

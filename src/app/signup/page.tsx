@@ -205,7 +205,7 @@ const SignUp = () => {
     };
     return (
         <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] h-screen w-screen flex items-center lg:justify-start justify-center lg:px-60">
-            <div className={`h-[600px] w-[500px] bg-black rounded-2xl lg:p-6 p-4 absolute`} >
+            <div className={`h-[600px] w-[500px] bg-black rounded-2xl lg:p-6 p-4 absolute top-[15%]`} >
                 <form onSubmit={handleSubmit} method="post" className="bg-customYellow h-full w-full flex flex-col items-center justify-between py-3 gap-5 shadow-inner">
                     <div className="flex flex-col items-center">
                         <h1 className="text-3xl font-extrabold">CREATE AN ACCOUNT</h1>

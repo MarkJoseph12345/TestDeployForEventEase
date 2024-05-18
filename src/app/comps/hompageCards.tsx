@@ -138,7 +138,7 @@ const HomePageCard = () => {
         setCurrentIndex(circleIndex);
     };
 
-    const numVisibleCards = isMobile ? 1 : 3;
+    const numVisibleCards = isMobile ? 1 : 4;
     const numCircles = Math.max(homePageCards.length - numVisibleCards + 1, 1);
 
     const [popupEvent, setPopupEvent] = useState<EventCard | null>(null);
@@ -153,7 +153,7 @@ const HomePageCard = () => {
 
     return (
         <div className="relative">
-            <div className={`flex lg:${homePageCards.length === 1 ? 'justify-center' : 'justify-between'} justify-center max-w-[90%] mx-auto`}>
+            <div className={`flex lg:${homePageCards.length <= 3 ? 'justify-center gap-5' : 'justify-between'} justify-center max-w-[90%] mx-auto`}>
                 {homePageCards.slice(currentIndex, currentIndex + numVisibleCards).map((card) => (
                     <div key={card.id} className="border p-8 rounded-lg flex flex-col items-center shadow-xl">
                         <img src={card.eventPicture} alt={`Image ${card.id}`} className="w-[250px] h-[200px] cursor-pointer" onClick={() => openPopup(card)} />
