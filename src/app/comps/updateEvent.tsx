@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
@@ -34,7 +34,7 @@ interface FormErrors {
 }
 
 
-const updateEventModal = ({ visible, onClose }: any) => {
+const UpdateEventModal = ({ visible, onClose }: any) => {
   const [showEndCalendar, setShowEndCalendar] = useState(false);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [formData, setFormData] = useState({
@@ -536,4 +536,4 @@ const updateEventModal = ({ visible, onClose }: any) => {
 
 
 
-export default updateEventModal;
+export default UpdateEventModal;
