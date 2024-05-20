@@ -29,8 +29,6 @@ interface FormErrors {
   selectedFile?: string;
   startDate?: string;
   endDate?: string;
-  startTime?: string;
-  endTime?: string;
 }
 
 
@@ -43,9 +41,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
     eventDescription: "",
     department: "CEA",
     startDate: null as Date | null,
-    startTime: null as Date | null,
     endDate: null as Date | null,
-    endTime: null as Date | null,
     eventPicture: null as string | ArrayBuffer | null,
     eventStarts: null as Date | null,
     eventEnds: null as Date | null,
@@ -98,7 +94,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
   const handleDateChange = (date: Date | null, type: string) => {
-    // Validate the selected date
     if (!date) {
       setFormErrors(prevErrors => ({
         ...prevErrors,
@@ -111,7 +106,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       }));
     }
 
-    // Check if the selected date is before the current date
     const currentDate = new Date();
     if (type === 'start' && date && date < currentDate) {
       setFormErrors(prevErrors => ({
@@ -120,7 +114,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       }));
     }
 
-    // Check if the end date is before the start date
     if (type === 'end' && date && formData.startDate && date < formData.startDate) {
       setFormErrors(prevErrors => ({
         ...prevErrors,
@@ -128,7 +121,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       }));
     }
 
-    // Update formData with the new date value
     if (type === 'start') {
       setFormData({
         ...formData,
@@ -140,37 +132,19 @@ const CreateEventModal = ({ visible, onClose }: any) => {
         endDate: date
       });
     }
-  };
 
-  const handleTimeChange = (time: Date | null, type: string) => {
-    // Validate the selected time
-    if (!time) {
-      setFormErrors(prevErrors => ({
-        ...prevErrors,
-        [type === 'start' ? 'startTime' : 'endTime']: 'Please select a valid time'
-      }));
-    } else {
-      setFormErrors(prevErrors => ({
-        ...prevErrors,
-        [type === 'start' ? 'startTime' : 'endTime']: ''
-      }));
+    if (formData.startDate && type === 'start') {
+      if (date && date.getTime()) {
+        setShowStartCalendar(false);
+      }
     }
 
-    // Update formData with the new time value
-    if (type === 'start') {
-      setFormData({
-        ...formData,
-        startTime: time
-      });
-    } else {
-      setFormData({
-        ...formData,
-        endTime: time
-      });
+    if (formData.endDate && type === 'end') {
+      if (date && date.getTime()) {
+        setShowEndCalendar(false);
+      }
     }
   };
-
-
 
   const [secFormData, setSecFormData] = useState(new FormData());
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -210,62 +184,61 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
   const createEventFunction = async () => {
+    console.log("Test")
+    setLoading(true);
     const requiredErrorMessages: FormErrors = {
       eventName: !formData.eventName ? 'Event name is required' : '',
       eventDescription: !formData.eventDescription ? 'Event description is required' : '',
       selectedFile: !selectedFile ? 'File is required' : '',
     };
-    setLoading(true);
 
-    if (!formData.eventName || !formData.eventDescription || !formData.startDate || !formData.startTime || !formData.endDate || !formData.endTime || !selectedFile) {
+    if (!formData.eventName || !formData.eventDescription || !formData.startDate || !formData.endDate || !selectedFile) {
       setFormErrors(requiredErrorMessages)
       setLoading(false);
       return;
     }
 
 
-    const eventStarts = new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startTime.getHours(), formData.startTime.getMinutes(), formData.startTime.getSeconds())
-
-
-    const eventEnds = new Date(formData.endDate.getFullYear(), formData.endDate.getMonth(), formData.endDate.getDate(), formData.endTime.getHours(), formData.endTime.getMinutes(), formData.endTime.getSeconds())
-
     const currentDateTime = new Date();
-    if (eventStarts <= currentDateTime) {
+    if (formData.startDate <= currentDateTime) {
       setFormErrors({
         ...requiredErrorMessages,
         startDate: "Start date and time must be in the future",
-        startTime: "Start date and time must be in the future",
       });
       console.log("Start time")
       setLoading(false);
       return;
     }
-    else{
+    else {
       setFormErrors({
         ...requiredErrorMessages,
         startDate: "",
-        startTime: "",
       });
     }
 
-    if (eventEnds <= eventStarts) {
+    if (formData.endDate <= formData.startDate) {
       setFormErrors({
         ...requiredErrorMessages,
         endDate: "End date must be after start date",
-        endTime: "End time must be after start time",
       });
       console.log("End time")
       setLoading(false);
       return;
     }
-    else{
+    else {
       setFormErrors({
         ...requiredErrorMessages,
         endDate: "",
-        endTime: "",
       });
     }
     const { eventPicture, ...formDataWithoutPicture } = formData;
+    
+    
+    const eventStarts = new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startDate.getHours(), formData.startDate.getMinutes(), formData.startDate.getSeconds())
+
+
+    const eventEnds = new Date(formData.endDate.getFullYear(), formData.endDate.getMonth(), formData.endDate.getDate(), formData.endDate.getHours(), formData.endDate.getMinutes(), formData.endDate.getSeconds())
+
 
     const updatedFormData = {
       ...formDataWithoutPicture,
@@ -279,8 +252,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       const id = response.data.id;
 
       if (selectedFile) {
-        console.log(`image: ${API_ENDPOINTS.UPDATE_EVENT}${id}`, secFormData);
-        const pictureResponse = await axios.put(`${API_ENDPOINTS.UPDATE_EVENT}${id}`, secFormData);
+        const pictureResponse = await axios.put(`${API_ENDPOINTS.UPDATE_EVENTPICTURE}${id}`, secFormData);
         console.log("Image upload successful:", pictureResponse.data);
       }
       window.location.reload();
@@ -302,8 +274,8 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       className="backdrop-blur-[4px]"
     >
       <div
-        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] relative'
-        style={{ backgroundImage: "url('/inno.png')", backgroundSize: 'cover' }}
+        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] relative h-[26rem]'
+
       >
         <h2 className='text-lg font-bold -mt-4 p-4'>Create Event</h2>
 
@@ -375,21 +347,19 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
           <div className="relative p-5 -mt-7">
             <p className="font-poppins text-sm font-regular -mt-6 ">Start Date <span className="text-red-800">*</span></p>
-            {/* {formErrors.startDate && (
-              <p className="text-red-800 text-xs font-poppins w-40">
-                {formErrors.startDate}
-              </p>
-            )} */}
-            {/*Ayuha ni maguba ig butang sa error*/}
+            <div className='relative'></div>
+            {formErrors.startDate && (
+              <div className="relative  left-0 mt-2">
+                <p className=" text-red-800 text-xs font-poppins w-40">
+                  {formErrors.startDate}
+                </p>
+              </div>
+            )}
             <div className="relative">
               <input
                 type='text'
                 placeholder='Select Date and Time'
-                value={
-                  formData.startDate && formData.startTime
-                    ? `${formData.startDate.toLocaleDateString()} ${formData.startTime.toLocaleTimeString()}`
-                    : ''
-                }
+                value={formData.startDate ? `${formData.startDate.toLocaleDateString()} ${formData.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
                 readOnly
                 className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
               />
@@ -397,77 +367,71 @@ const CreateEventModal = ({ visible, onClose }: any) => {
                 src="/calendar.png"
                 alt="Calendar"
                 className="absolute top-0 right-20 m-2 cursor-pointer w-[15px] mr-[30rem]"
-                onClick={() => setShowStartCalendar(true)}
+                onClick={() => {
+                  setShowStartCalendar(!showStartCalendar);
+                  setShowEndCalendar(false);
+                }}
               />
               {showStartCalendar && (
-                <div className="absolute top-full w-[5rem] h-[32px] -left-1 -mt-3 p-4">
+                <div className="absolute top-full left-0 mt-2 z-10">
                   <DatePicker
+                    inline
                     selected={formData.startDate}
                     onChange={(date) => handleDateChange(date, 'start')}
-                    dateFormat="MM/dd/yyyy"
-                    className="border-[1px] border-black mt-[5px] w-[7rem] font-regular text-[10px] rounded-2xl text-center"
-                  />
-                  <DatePicker
-                    selected={formData.startTime}
-                    onChange={(time) => handleTimeChange(time, 'start')}
                     showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={1}
+                    timeFormat="h:mm aa"
+                    timeIntervals={30}
                     timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className="border-[1px] border-black mt-[5px] w-[7rem] font-regular text-[10px] rounded-2xl text-center"
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                    className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
+                  />
+                </div>
+              )}
+              {showEndCalendar && (
+                <div className="absolute top-full left-0 mt-2 z-10">
+                  <DatePicker
+                    inline
+                    selected={formData.endDate}
+                    onChange={(date) => handleDateChange(date, 'end')}
+                    showTimeSelect
+                    timeFormat="h:mm aa"
+                    timeIntervals={15}
+                    timeCaption="Time"
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                    className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          <div className="relative p-5 -mt-[5.5rem] ml-[11rem]">
+          <div className="absolute  p-5 mt-[16.4rem] ml-[11rem]">
             <p className="font-poppins text-sm font-regular -mt-6">End Date <span className="text-red-800">*</span></p>
-            {/* {formErrors.endDate && (
-              <p className="text-red-800 text-xs font-poppins text-balance w-40">
-                {formErrors.endDate}
-              </p>
-            )} */}
-            {/*Ayuha ni maguba ig butang sa error*/}
+            {formErrors.endDate && (
+              <div className="relative  left-0 mt-2">
+                <p className=" text-red-800 text-xs font-poppins w-40">
+                  {formErrors.endDate}
+                </p>
+              </div>
+            )}
             <div className="relative">
               <input
                 type='text'
                 placeholder='Select Date and Time'
-                value={
-                  formData.endDate && formData.endTime
-                    ? `${formData.endDate.toLocaleDateString()} ${formData.endTime.toLocaleTimeString()}`
-                    : ''
-                }
+                value={formData.endDate ? `${formData.endDate.toLocaleDateString()} ${formData.endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
                 readOnly
                 className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
               />
               <img
                 src="/calendar.png"
                 alt="Calendar"
-                className="absolute top-0 right-[254px] m-2 cursor-pointer w-[15px] mr-[8rem]"
-                onClick={() => setShowEndCalendar(true)}
+                className="relative -top-[2rem] right-[254px] m-2 cursor-pointer w-[15px] ml-[23.5rem]"
+                onClick={() => {
+                  setShowEndCalendar(!showEndCalendar);
+                  setShowStartCalendar(false);
+                }}
               />
-              {showEndCalendar && (
-                <div className="absolute top-full w-[5rem] h-[32px] -left-1 -mt-3 p-4">
-                  <DatePicker
-                    selected={formData.endDate}
-                    onChange={(date) => handleDateChange(date, 'end')}
-                    dateFormat="MM/dd/yyyy"
-                    className="border-[1px] border-black mt-[5px] w-[7rem] font-regular text-[10px] rounded-2xl text-center"
-                  />
-                  <DatePicker
-                    selected={formData.endTime}
-                    onChange={(time) => handleTimeChange(time, 'end')}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={1}
-                    timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className="border-[1px] border-black mt-[5px] w-[7rem] font-regular text-[10px] rounded-2xl text-center"
-                  />
-                </div>
-              )}
+
             </div>
           </div>
         </div>
@@ -524,7 +488,7 @@ const CreateEventModal = ({ visible, onClose }: any) => {
                 </Button>
               </div>
             </div>
-            <div className='ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
+            <div className=' ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
               <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "CREATING..." : "CREATE"}</Button>
             </div>
           </div>
