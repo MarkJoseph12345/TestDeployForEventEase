@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import StudentSideBar from '../comps/studentSidebar';
 import StudentAllJoinedEventCards from '../comps/studentJoinedEvents';
+import { withAuth } from '../protection.js';
 
 const StudentAllEventsPage = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,4 +44,4 @@ const StudentAllEventsPage = () => {
     );
 }
 
-export default StudentAllEventsPage;
+export default withAuth(StudentAllEventsPage);
