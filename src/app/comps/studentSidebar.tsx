@@ -9,6 +9,7 @@ interface User {
   name: string;
   username: string;
   firstName: string;
+  lastName: string;
 }
 
 const StudentSideBar = ({ isOpen = true }) => {
@@ -26,12 +27,7 @@ const StudentSideBar = ({ isOpen = true }) => {
       try {
         const response = await axios.get(API_ENDPOINTS.GET_USER_BY_ID + userid);
 
-        const { name, ...userData } = response.data;
-        const lastSpaceIndex = name.lastIndexOf(' ');
-        const firstName = name.substring(0, lastSpaceIndex);
-        const lastName = name.substring(lastSpaceIndex + 1);
-
-        setUser({ ...userData, name, firstName, lastName });
+        setUser(response.data)
       } catch (error) {
         console.error('Error fetching user:', error);
       }
@@ -91,8 +87,12 @@ const StudentSideBar = ({ isOpen = true }) => {
           <span className="text-white font-regular  font-poppins text-[13px] ml-[8px]">Join Event</span>
         </button>
         <JoinEvent visible={isModalOpen} onClose={handleModalClose} />
-        <Link href="/dashboard" className='mt-5 ml-[4.5rem]'>Home</Link>
-        <p onClick={profileClicked} className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex items-center w-full font-bold text-sm cursor-pointer"><img src="defaultpic.png" className="w-19 h-19" />{user?.name}</p>
+        <div className='flex flex-col mt-5 ml-[4.5rem] gap-1'>
+          <Link href="/dashboard">Home</Link>
+          <Link href="/allevents">Events</Link>
+          <Link href="/joinedevents">Joined</Link>
+        </div>
+        <p onClick={profileClicked} className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex items-center w-full font-bold text-sm cursor-pointer"><img src="defaultpic.png" className="w-19 h-19" />{user?.firstName} {user?.lastName}</p>
         {openProfile && (
           <div ref={profileRef} className='w-[90%] bg-white rounded absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col'>
             <div className='flex items-center'>

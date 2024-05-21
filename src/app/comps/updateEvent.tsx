@@ -221,20 +221,19 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   const [loading, setLoading] = useState(false);
 
 
-  const createEventFunction = async () => {
+ 
+  const updateEventFunction = async () => {
     setLoading(true);
     const requiredErrorMessages: FormErrors = {
       eventName: !formData.eventName ? 'Event name is required' : '',
       eventDescription: !formData.eventDescription ? 'Event description is required' : '',
-      selectedFile: !selectedFile ? 'File is required' : '',
     };
 
-    if (!formData.eventName || !formData.eventDescription || !formData.eventStarts || !formData.eventEnds || !selectedFile) {
+    if (!formData.eventName || !formData.eventDescription || !formData.eventStarts || !formData.eventEnds) {
       setFormErrors(requiredErrorMessages)
       setLoading(false);
       return;
     }
-
 
     const currentDateTime = new Date();
     if (formData.eventStarts <= currentDateTime) {
@@ -270,18 +269,15 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
     }
     const { eventPicture, ...formDataWithoutPicture } = formData;
 
-
     const eventStarts = new Date(formData.eventStarts.getFullYear(), formData.eventStarts.getMonth(), formData.eventStarts.getDate(), formData.eventStarts.getHours(), formData.eventStarts.getMinutes(), formData.eventStarts.getSeconds())
-
 
     const eventEnds = new Date(formData.eventEnds.getFullYear(), formData.eventEnds.getMonth(), formData.eventEnds.getDate(), formData.eventEnds.getHours(), formData.eventEnds.getMinutes(), formData.eventEnds.getSeconds())
 
-
     const updatedFormData = {
       ...formDataWithoutPicture,
-      eventStarts,
-      eventEnds,
-    };
+      eventStarts: eventStarts.toISOString(),
+      eventEnds: eventEnds.toISOString()
+    }
 
     try {
       const response = await axios.put(`${API_ENDPOINTS.UPDATE_EVENT}${id}`, updatedFormData);
@@ -292,12 +288,14 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
         console.log("Image upload successful:", pictureResponse.data);
       }
       window.location.reload();
+      onClose();
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error('Error updating event:', error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
@@ -524,7 +522,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               </div>
             </div>
             <div className=' ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
+              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
             </div>
           </div>
         </div>

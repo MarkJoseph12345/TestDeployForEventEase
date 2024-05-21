@@ -2,12 +2,11 @@
 
 
 interface EventCard {
+    id: number;
     imageUrl: string;
     date: string;
     eventName: string;
     location: string;
-    eventStartsDate: string;
-    eventStartsHour: string;
     eventPicture: string;
     eventDescription: string;
     department: string;
@@ -25,16 +24,16 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
     const starthours = new Date(event.eventStarts).getHours();
     const startminutes = new Date(event.eventStarts).getMinutes();
 
-    let formattedStartHours: number | string = starthours % 12 || 12; 
+    let formattedStartHours: number | string = starthours % 12 || 12;
     const startamPm = starthours >= 12 ? 'PM' : 'AM';
     formattedStartHours = formattedStartHours < 10 ? '0' + formattedStartHours : formattedStartHours;
 
     const formattedStartTime = `${formattedStartHours}:${startminutes < 10 ? '0' + startminutes : startminutes} ${startamPm}`;
-    
+
     const endhours = new Date(event.eventEnds).getHours();
     const endminutes = new Date(event.eventEnds).getMinutes();
 
-    let formattedEndHours: number | string = endhours % 12 || 12; 
+    let formattedEndHours: number | string = endhours % 12 || 12;
     const endamPm = endhours >= 12 ? 'PM' : 'AM';
     formattedEndHours = formattedEndHours < 10 ? '0' + formattedEndHours : formattedEndHours;
 
@@ -69,10 +68,23 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
 };
 
 const StudentEventCards = () => {
+    const [popupEvent, setPopupEvent] = useState<EventCard | null>(null);
+
+    const openPopup = (event: EventCard) => {
+        setPopupEvent(event);
+    };
+
+    const closePopup = () => {
+        setPopupEvent(null);
+    };
+
+    const [userid, setUserid] = useState<string | null>(null);
     const [studentPageCards, setStudentPageCards] = useState<EventCard[]>([]);
+    const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
     useEffect(() => {
-        const department = localStorage.getItem("department");
-        console.log(department)
+        const storedUserId = window.localStorage.getItem("userid");
+        setUserid(storedUserId);
+        const department = window.localStorage.getItem("department");
         const fetchData = async () => {
             try {
                 const response = await axios.get(API_ENDPOINTS.GET_ALL_EVENTS);
@@ -87,24 +99,25 @@ const StudentEventCards = () => {
                             });
                             if (imgResponse.status >= 200 && imgResponse.status < 300) {
                                 const base64Image = Buffer.from(imgResponse.data, 'binary').toString('base64');
-                                const eventStartsDate = new Date(event.eventStarts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-                                const eventStartsHour = new Date(event.eventStarts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
                                 return {
                                     ...event,
-                                    eventStartsDate,
-                                    eventStartsHour,
                                     eventPicture: `data:image/png;base64,${base64Image}`
                                 };
                             } else {
                                 return event;
                             }
+
                         } catch (error) {
                             console.error(`Error fetching image for event with ID ${event.id}:`, error);
                             return event;
                         }
                     }));
+                    const joinedResponse = await axios.get(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${storedUserId}`);
+
+                    if (joinedResponse.status === 200) {
+                        setJoinedEvents(joinedResponse.data);
+                    }
 
                     const todayEvents = cardsWithPictures.filter((event: any) => {
                         const eventDate = new Date(event.eventStarts).toISOString().split('T')[0];
@@ -123,6 +136,27 @@ const StudentEventCards = () => {
         fetchData();
     }, []);
 
+    const [loading, setLoading] = useState(false);
+    const handleJoinEvent = async (userId: string | null, eventId: number) => {
+        setLoading(true)
+        try {
+            const response = await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);
+            if (response.status === 200) {
+                console.log('Successfully joined event');
+                const joinedResponse = await axios.get(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${userid}`);
+
+                    if (joinedResponse.status === 200) {
+                        setJoinedEvents(joinedResponse.data);
+                    }
+            } else {
+                console.error('Failed to join event');
+            }
+        } catch (error) {
+            console.error('Error joining event:', error);
+        } finally {
+            setLoading(false)
+        }
+    };
 
     return (
         <div className="relative">
@@ -130,27 +164,27 @@ const StudentEventCards = () => {
                 {studentPageCards.map((card, index) => (
                     <div key={index} className="border p-8 rounded-lg flex flex-col items-start gap-4 shadow-xl relative">
                         <div className='self-center relative'>
-                            <img className="self-center h-[10.938rem] w-[15.625rem] object-fill" src={card.eventPicture} />
+                            <img className="self-center h-[10.938rem] w-[15.625rem] object-fill" src={card.eventPicture} onClick={() => openPopup(card)} />
                             <div className="absolute -mt-5 -ml-5 top-0 left-0 bg-customYellow rounded-full text-base w-16 h-16 font-bold flex justify-center items-center text-center flex-col">
-                                <div>{new Date(card.eventStartsDate).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
-                                <div className='text-[12px]'>{new Date(card.eventStartsDate).getDate()}</div>
+                                <div>{new Date(card.eventStarts).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
+                                <div className='text-[12px]'>{new Date(card.eventStarts).getDate()}</div>
                             </div>
 
                         </div>
                         <div className='flex flex-col'>
                             <p>Event Name: {card.eventName}</p>
                             <div className="flex items-center">
-                                <p className="-ml-1.6">Time: {card.eventStartsHour}</p>
-                                
+                                <p className="-ml-1.6">Time: {new Date(card.eventStarts).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - {new Date(card.eventEnds).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
                             </div>
                         </div>
                         <div className='self-end'>
-                            <button className='font-bold rounded px-3 py-1 bg-customYellow'>Join</button>
+                            <button className={` ${loading ? 'text-sm' : 'text-base'} font-bold rounded px-3 py-1 bg-customYellow `} onClick={() => handleJoinEvent(userid, card.id)} disabled={joinedEvents.some(event => event.id === card.id)}> {loading ? "Joining..." : joinedEvents.some(event => event.id === card.id) ? "Joined" : "Join"}
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
-           
+            {popupEvent && <EventPopup event={popupEvent} onClose={closePopup} />}
         </div>
     );
 };

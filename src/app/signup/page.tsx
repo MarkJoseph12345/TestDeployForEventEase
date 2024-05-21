@@ -184,7 +184,7 @@ const SignUp = () => {
             console.log("Login successful:", response.data);
             const authToken = response.data.token;
             const role = response.data.user.role;
-            const name = response.data.user.name;
+            const name = response.data.user.firstName;
             const userid = response.data.user.id;
             const department = response.data.user.department;
             window.localStorage.setItem("token", authToken);

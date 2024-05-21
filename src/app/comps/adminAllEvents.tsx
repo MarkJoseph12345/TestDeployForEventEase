@@ -74,14 +74,14 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
                 </div>
                 <div className='flex justify-end w-full mt-2'>
                     <button className='font-bold rounded px-3 py-1 bg-customYellow' onClick={handleModalOpen}>Manage Details</button>
-                    <UpdateEventModal visible={isModalOpen} onClose={handleModalClose} id={event.id}/>
+                    <UpdateEventModal visible={isModalOpen} onClose={handleModalClose} id={event.id} />
                 </div>
             </div>
         </div>
     );
 };
 
-const AdminEventCards = () => {
+const AdminAllEventCards = () => {
 
     const [popupEvent, setPopupEvent] = useState<EventCard | null>(null);
 
@@ -101,8 +101,6 @@ const AdminEventCards = () => {
                 const response = await axios.get(API_ENDPOINTS.GET_ALL_EVENTS);
                 if (response.status >= 200 && response.status < 300) {
                     const data = response.data;
-                    const today = new Date();
-                    const todayDateString = today.toISOString().split('T')[0];
 
                     const cardsWithPictures = await Promise.all(data.map(async (event: any) => {
                         try {
@@ -124,12 +122,9 @@ const AdminEventCards = () => {
                             return event;
                         }
                     }));
-                    const todayEvents = cardsWithPictures.filter((event: any) => {
-                        const eventDate = new Date(event.eventStarts).toISOString().split('T')[0];
-                        return eventDate === todayDateString;
-                    });
+                   
 
-                    setAdminPageCards(todayEvents);
+                    setAdminPageCards(cardsWithPictures);
                 } else {
                     throw new Error('Failed to fetch data');
                 }
@@ -151,7 +146,7 @@ const AdminEventCards = () => {
                         <div className='self-center relative'>
                             <img className="self-center  h-[10.938rem] w-[15.625rem] object-fill" src={card.eventPicture} />
                             <div className="absolute -mt-5 -ml-5 top-0 left-0 bg-customYellow rounded-full text-base w-16 h-16 font-bold flex justify-center items-center text-center flex-col">
-                            <div>{new Date(card.eventStarts).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
+                                <div>{new Date(card.eventStarts).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
                                 <div className='text-[12px]'>{new Date(card.eventStarts).getDate()}</div>
                             </div>
 
@@ -159,7 +154,7 @@ const AdminEventCards = () => {
                         <div className='flex flex-col'>
                             <p>Event Name: {card.eventName}</p>
                             <div className="flex items-center">
-                            <p className="-ml-1.6">Time: {new Date(card.eventStarts).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - {new Date(card.eventEnds).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
+                                <p className="-ml-1.6">Time: {new Date(card.eventStarts).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - {new Date(card.eventEnds).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
                             </div>
                         </div>
                         <div className='self-end'>
@@ -175,4 +170,4 @@ const AdminEventCards = () => {
 
 
 
-export default AdminEventCards;
+export default AdminAllEventCards;

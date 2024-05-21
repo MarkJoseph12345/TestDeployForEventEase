@@ -20,10 +20,6 @@ export function withAuth(Component) {
             }
         }, [indi, router]);
 
-        useEffect(() => {
-            console.log(indi);
-        }, [indi]);
-
         if (typeof window === 'undefined') {
             if (!indi) {
                 return <div className="max-w-[2000px] relative mx-auto"></div>;

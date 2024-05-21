@@ -1,4 +1,4 @@
-const BASE_URL = "https://eventease-adw2.onrender.com";
+const BASE_URL = "http://localhost:8080";
 
 export const API_ENDPOINTS = {
   REGISTER: `${BASE_URL}/api/v1/auth/register`,
@@ -9,5 +9,8 @@ export const API_ENDPOINTS = {
   GET_ALL_EVENTS: `${BASE_URL}/api/v1/auth/event/getAllEvents`,
   GET_EVENT_PICTURE: `${BASE_URL}/api/v1/auth/event/getEventPicture/`,
   GET_EVENT_BY_ID: `${BASE_URL}/api/v1/auth/event/getEventById/`,
-  GET_USER_BY_ID: `${BASE_URL}/api/v1/auth/user/`
+  GET_USER_BY_ID: `${BASE_URL}/api/v1/auth/user/`,
+  UPDATE_USER: `${BASE_URL}/api/v1/auth/updateUser/`,
+  JOIN_EVENT: `${BASE_URL}/api/v1/auth/userevent/joinEvent/`,
+  GET_EVENTS_JOINED_BY_USER: `${BASE_URL}/api/v1/auth/userevent/getAllEventsJoinedByUser/`,
 };
