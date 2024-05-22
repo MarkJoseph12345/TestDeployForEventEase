@@ -132,7 +132,6 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   };
 
 
-
   const handleDateChange = (date: Date | null, type: string) => {
     if (!date) {
       setFormErrors(prevErrors => ({
@@ -157,11 +156,11 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
         endDate: 'End date cannot be before the start date'
       }));
     } else {
-      if (type === 'start') {
-        setFormData(prevData => ({
-          ...prevData,
-          eventStarts: date
-        }));
+        if (type === 'start') {
+          setFormData(prevData => ({
+            ...prevData,
+            eventStarts: date
+          }));
       } else {
         setFormData(prevData => ({
           ...prevData,
@@ -422,7 +421,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
                 <div className="absolute top-full left-0 mt-2 z-10">
                   <DatePicker
                     inline
-                    selected={formData.startDate}
+                    selected={formData.eventStarts}
                     onChange={(date) => handleDateChange(date, 'start')}
                     showTimeSelect
                     timeFormat="h:mm aa"
@@ -437,7 +436,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
                 <div className="absolute top-full left-0 mt-2 z-10">
                   <DatePicker
                     inline
-                    selected={formData.endDate}
+                    selected={formData.eventEnds}
                     onChange={(date) => handleDateChange(date, 'end')}
                     showTimeSelect
                     timeFormat="h:mm aa"
@@ -538,7 +537,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
                 <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
               </div>
               <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { deleteEventFunction(formData.eventid) }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "DELETING..." : "DELETE"}</Button>
+              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { deleteEventFunction(formData.eventid) }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>DELETE</Button>
             </div>
             </div>
 
