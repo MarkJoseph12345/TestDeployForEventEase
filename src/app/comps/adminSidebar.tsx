@@ -101,7 +101,7 @@ const AdminSideBar = ({ isOpen = true }) => {
               </div>
               <div className="flex flex-col items-center">
                 <p>{user?.firstName}</p>
-                <p className='text-sm '>email</p>
+                {/* <p className='text-sm '>email</p> */}
               </div>
             </div>
             <div className='flex flex-col'>

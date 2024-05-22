@@ -25,6 +25,14 @@ const StudentDashboard = () => {
         toggleDropdown();
     };
 
+    const [dept, setDept] = useState('')
+
+    useEffect(() => {
+        const dept = window.localStorage.getItem('department');
+        if (dept) {
+            setDept(dept)
+        }
+    }, []);
     
     return (
         <div className='flex w-full h-screen 'style={{ overflowY: 'hidden' }}>
@@ -87,7 +95,7 @@ const StudentDashboard = () => {
                     </div>
                 </div>
                 <div className='bg-customWhite ml-[2rem] flex-1 mt-[2.6rem]' style={{ overflowY: 'auto' }}>
-                    <p className='mt-20 mb-[1rem] ml-[4rem] text-2xl font-bold'>Today&apos;s Events!</p>
+                    <p className='mt-20 mb-[1rem] ml-[4rem] text-2xl font-bold'>{dept} Events!</p>
                     <StudentEventCards />
                 </div>
             </div>

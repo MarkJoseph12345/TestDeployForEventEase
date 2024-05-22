@@ -121,7 +121,7 @@ const StudentEventCards = () => {
 
                     const todayEvents = cardsWithPictures.filter((event: any) => {
                         const eventDate = new Date(event.eventStarts).toISOString().split('T')[0];
-                        return eventDate === todayDateString && event.department === department;
+                        return event.department === department;
                     });
 
                     setStudentPageCards(todayEvents);

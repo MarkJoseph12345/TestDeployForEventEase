@@ -129,7 +129,7 @@ const AdminEventCards = () => {
                         return eventDate === todayDateString;
                     });
 
-                    setAdminPageCards(todayEvents);
+                    setAdminPageCards(cardsWithPictures);
                 } else {
                     throw new Error('Failed to fetch data');
                 }

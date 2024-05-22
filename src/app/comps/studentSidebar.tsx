@@ -101,7 +101,7 @@ const StudentSideBar = ({ isOpen = true }) => {
               </div>
               <div className="flex flex-col items-center">
                 <p>{user?.firstName}</p>
-                <p className='text-sm'>Email</p>
+                {/* <p className='text-sm'>Email</p> */}
               </div>
             </div>
             <div className='flex flex-col'>
