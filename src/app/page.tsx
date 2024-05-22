@@ -74,14 +74,20 @@ const Home = () => {
         });
         setHomePageCards(updatedHomePageCards);
 
-        const completedEvents = allEvents.filter((event: { eventEnds: string | number | Date; }) => new Date(event.eventEnds) < new Date());
+        // const completedEvents = allEvents.filter((event: { eventEnds: string | number | Date; }) => new Date(event.eventEnds) < new Date());
 
-        completedEvents.sort((a: { eventEnds: string | number | Date }, b: { eventEnds: string | number | Date }) => new Date(b.eventEnds).getTime() - new Date(a.eventEnds).getTime());
+        // completedEvents.sort((a: { eventEnds: string | number | Date }, b: { eventEnds: string | number | Date }) => new Date(b.eventEnds).getTime() - new Date(a.eventEnds).getTime());
 
-        const latestCompletedEventId = completedEvents[0].id;
+        // const latestCompletedEventId = completedEvents[0].id;
+
+        const upcomingEvents = allEvents.filter((event: { eventStarts: string | number | Date; }) => new Date(event.eventStarts) > new Date());
+
+        upcomingEvents.sort((a: { eventStarts: string | number | Date }, b: { eventStarts: string | number | Date }) => new Date(a.eventStarts).getTime() - new Date(b.eventStarts).getTime());
+
+        const closestUpcomingEventId = upcomingEvents[0].id;
 
         try {
-          const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${latestCompletedEventId}`, {
+          const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${closestUpcomingEventId}`, {
             responseType: 'arraybuffer'
           });
           if (imgResponse.status >= 200 && imgResponse.status < 300) {
