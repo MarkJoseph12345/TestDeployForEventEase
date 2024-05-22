@@ -1,9 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from '@mui/material/Modal';
 import Button from '@mui/material/Button';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../api';
 
+
+interface EventCard {
+  id: number;
+  imageUrl: string;
+  date: string;
+  eventName: string;
+  location: string;
+  eventPicture: string;
+  eventDescription: string;
+  department: string;
+  eventType: string;
+  eventStarts: string;
+  eventEnds: string;
+}
 
 const JoinEventModal = ({ visible, onClose }: any) => {
   const [searchValue, setSearchValue] = useState('');
@@ -17,6 +33,72 @@ const JoinEventModal = ({ visible, onClose }: any) => {
     console.log('Search submitted:', searchValue);
     
   };
+
+  const [popupEvent, setPopupEvent] = useState<EventCard | null>(null);
+
+  const openPopup = (event: EventCard) => {
+      setPopupEvent(event);
+  };
+
+  const closePopup = () => {
+      setPopupEvent(null);
+  };
+
+  const [userid, setUserid] = useState<string | null>(null);
+  const [studentPageCards, setStudentPageCards] = useState<EventCard[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
+  useEffect(() => {
+      const storedUserId = window.localStorage.getItem("userid");
+      setUserid(storedUserId);
+      const department = window.localStorage.getItem("department");
+      const fetchData = async () => {
+          try {
+              const response = await axios.get(API_ENDPOINTS.GET_ALL_EVENTS);
+              if (response.status >= 200 && response.status < 300) {
+                  const data = response.data;
+                  const cardsWithPictures = await Promise.all(data.map(async (event: any) => {
+                      try {
+                          const imgResponse = await axios.get(`${API_ENDPOINTS.GET_EVENT_PICTURE}${event.id}`, {
+                              responseType: 'arraybuffer'
+                          });
+                          if (imgResponse.status >= 200 && imgResponse.status < 300) {
+                              const base64Image = Buffer.from(imgResponse.data, 'binary').toString('base64');
+
+                              return {
+                                  ...event,
+                                  eventPicture: `data:image/png;base64,${base64Image}`
+                              };
+                          } else {
+                              return event;
+                          }
+                          
+
+                      } catch (error) {
+                          console.error(`Error fetching image for event with ID ${event.id}:`, error);
+                          return event;
+                      }
+                  }));
+
+                  const joinedResponse = await axios.get(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${storedUserId}`);
+
+                  if (joinedResponse.status === 200) {
+                      setJoinedEvents(joinedResponse.data);
+                  }
+                  const deptEvents = cardsWithPictures.filter((event: any) => {
+                      return event.department === department;
+                  });
+
+                  setStudentPageCards(deptEvents);
+              } else {
+                  throw new Error('Failed to fetch data');
+              }
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
+      };
+
+      fetchData();
+  }, []);
 
   return (
     <Modal

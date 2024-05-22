@@ -59,7 +59,7 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
                             <div className='text-[12px]'>{new Date(event.eventStarts).getDate()}</div>
                         </div>
                     </div>
-                    <div className="w-[500px] h-[200px] border-2 rounded-3xl border-customYellow p-4 mt-[1rem]">
+                    <div className="w-[500px] h-fit border-2 rounded-3xl border-customYellow p-4 mt-[1rem]">
                         <div className="flex flex-col items-center">
                             <p className="underline font-bold text-2xl">{event.eventName}</p>
                         </div>
@@ -67,8 +67,8 @@ const EventPopup = ({ event, onClose }: { event: EventCard; onClose: () => void 
                             <p className="font-bold">Event Details: <span className="font-normal">{event.eventDescription}</span></p>
                             <p className="font-bold">Event Type: <span className="font-normal">{event.eventType}</span></p>
                             <p className="font-bold">Department: <span className="font-normal">{event.department}</span></p>
-                            <p className="mt-.7 flex items-center gap-2"><span className='font-bold'>Time:</span> {new Date(event.eventStarts).toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                            <p className="mt-.7 flex items-center gap-2"><span className='font-bold'>Date:</span> {formattedStartTime} - {formattedEndTime}</p>
+                            <p className="mt-.7 flex items-center gap-2"><span className='font-bold'>Date:</span> {new Date(event.eventStarts).toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p className="mt-.7 flex items-center gap-2"><span className='font-bold'>Time:</span> {formattedStartTime} - {formattedEndTime}</p>
                         </div>
                     </div>
                 </div>

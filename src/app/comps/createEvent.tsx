@@ -184,7 +184,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
 
   const createEventFunction = async () => {
-    console.log("Test")
     setLoading(true);
     const requiredErrorMessages: FormErrors = {
       eventName: !formData.eventName ? 'Event name is required' : '',
@@ -232,8 +231,8 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       });
     }
     const { eventPicture, ...formDataWithoutPicture } = formData;
-    
-    
+
+
     const eventStarts = new Date(formData.startDate.getFullYear(), formData.startDate.getMonth(), formData.startDate.getDate(), formData.startDate.getHours(), formData.startDate.getMinutes(), formData.startDate.getSeconds())
 
 
@@ -258,7 +257,6 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       window.location.reload();
     } catch (error) {
       console.error("Error creating event:", error);
-    } finally {
       setLoading(false);
     }
   };
@@ -274,225 +272,241 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       className="backdrop-blur-[4px]"
     >
       <div
-        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] relative h-[26rem]'
+        className='bg-white p-4 rounded-3xl left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[48rem] relative h-fit'
 
       >
-        <h2 className='text-lg font-bold -mt-4 p-4'>Create Event</h2>
+        <div className="absolute top-0 right-0 z-20">
+          <Button
+          onClick={() => {
+            onClose();
+            setFormErrors({});
+            setShowStartCalendar(false);
+            setShowEndCalendar(false);
+          }} style={{ color: 'black', fontSize: '25px', }} >X</Button>
+        </div>
+
+        <div className="grid grid-cols-2 relative z-10 w-full">
+
+          <div className="flex flex-col py-2 px-5 gap-2">
+            <h2 className='text-lg font-bold'>Create Event</h2>
+            <div className="relative ">
+              <p className="font-poppins text-sm font-regular">Event Name <span className="text-red-800">*</span></p>
+              <input
+                type='text'
+                placeholder='Enter Text'
+                name="eventName"
+                value={formData.eventName}
+                onChange={handleInputChange}
+                className="p-2 w-[20rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[12px]"
+              />
+              {formErrors.eventName && (
+                <p className="text-red-800 text-xs font-poppins">
+                  {formErrors.eventName}
+                </p>
+              )}
+            </div>
+            <div className="relative">
+              <p className="font-poppins text-sm font-regular">Type of Event<span className="text-red-800">*</span></p>
+              <select
+                value={formData.eventType}
+                onChange={handleTypeofEventChange}
+                className="p-2 w-[20rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[12px]"
+
+              >
+                <option value="One-Time">One-Time</option>
+                <option value="Series">Series</option>
+              </select>
+            </div>
+            <div className="relative">
+              <p className="font-poppins text-sm font-regular">Event Description <span className="text-red-800">*</span></p>
+              <textarea
+                placeholder='Enter Description'
+                name="eventDescription"
+                value={formData.eventDescription}
+                onChange={handleInputChange}
+                className="p-2 w-[20rem] h-[60px] rounded-2xl border-[1.5px] border-black resize-none text-[12px]"
+              />
+
+              {formErrors.eventDescription && (
+                <p className="text-red-800 text-xs font-poppins">
+                  {formErrors.eventDescription}
+                </p>
+              )}
+            </div>
+
+            <div className="relative">
+              <p className="font-poppins text-sm font-regular">Department<span className="text-red-800">*</span></p>
+              <select
+                value={formData.department}
+                onChange={handleDepartmentChange}
+                className="p-2 w-[20rem] h-[32px] rounded-2xl  border-[1.5px] border-black text-[12px]"
+
+              >
+                <option value="CEA">CEA</option>
+                <option value="CMBA">CMBA</option>
+                <option value="CASE">CASE</option>
+                <option value="CNAHS">CNAHS</option>
+                <option value="CCS">CCS</option>
+                <option value="CCJ">CCJ</option>
+                <option value="ALL">ALL</option>
+              </select>
+            </div>
+            <div className="flex flex-row gap-3">
+
+              <div className="relative">
+                <p className="font-poppins text-sm font-regular">Start Date <span className="text-red-800">*</span></p>
+                <div className='relative'></div>
+                {formErrors.startDate && (
+                  <div className="relative">
+                    <p className=" text-red-800 text-xs font-poppins w-40">
+                      {formErrors.startDate}
+                    </p>
+                  </div>
+                )}
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Select Date and Time"
+                    value={formData.startDate ? `${formData.startDate.toLocaleDateString()} ${formData.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                    readOnly
+                    className="p-1 w-full h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
+                  />
+                  <img
+                    src="/calendar.png"
+                    alt="Calendar"
+                    className="absolute right-3 cursor-pointer w-[15px]"
+                    onClick={() => {
+                      setShowStartCalendar(!showStartCalendar);
+                      setShowEndCalendar(false);
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="relative">
+                <p className="font-poppins text-sm font-regular ">End Date <span className="text-red-800">*</span></p>
+                {formErrors.endDate && (
+                  <div className="relative  left-0 ">
+                    <p className=" text-red-800 text-xs font-poppins w-40">
+                      {formErrors.endDate}
+                    </p>
+                  </div>
+                )}
+                <div className="relative flex items-center">
+                  <input
+                    type='text'
+                    placeholder='Select Date and Time'
+                    value={formData.endDate ? `${formData.endDate.toLocaleDateString()} ${formData.endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                    readOnly
+                    className="p-1 w-full h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
+                  />
+                  <img
+                    src="/calendar.png"
+                    alt="Calendar"
+                    className="absolute right-3 cursor-pointer w-[15px]"
+                    onClick={() => {
+                      setShowEndCalendar(!showEndCalendar);
+                      setShowStartCalendar(false);
+                    }}
+                  />
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className=' font-bold relative flex flex-col items-center justify-center w-full'  >
+
+            <div>
+              <div className="relative p-5 mt-[1rem]  rounded-2xl border-[2px] border-customYellow" style={{ width: '12rem', height: '12rem' }}>
+                <div className="relative" style={{ width: '100%', height: '100%' }}>
+                  <VisuallyHiddenInput
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                  />
+                  {formData.eventPicture && (
+                    <img
+                      src={formData.eventPicture.toString()}
+                      alt="Uploaded"
+                      className="absolute top-0 left-0 w-full h-full object-cover rounded"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  )}
+
+                  {!formData.eventPicture && (
+                    <div className="absolute top-0 left-0 w-full h-full"></div>
+                  )}
+                  <Button
+                    component="label"
+                    role={undefined}
+                    tabIndex={-1}
+                    style={{
+                      marginTop: '10.5rem',
+                      fontSize: '11px',
+                      color: 'black',
+                      fontWeight: 'bold',
+                      textDecoration: 'underline',
+                      textTransform: 'none',
+                      marginRight: '-1.5rem',
+                      outline: 'none'
+                    }}
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  >
+                    Upload Event Picture
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className=' h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white absolute bottom-0 right-0'>
+                <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "CREATING..." : "CREATE"}</Button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 gap-5">
-          <div className="relative p-5 -mt-1">
-            <p className="font-poppins text-sm font-regular -mt-6">Event Name <span className="text-red-800">*</span></p>
-            <input
-              type='text'
-              placeholder='Enter Text'
-              name="eventName"
-              value={formData.eventName}
-              onChange={handleInputChange}
-              className="p-2 w-[20rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[12px]"
-            />
-            {formErrors.eventName && (
-              <p className="text-red-800 text-xs font-poppins">
-                {formErrors.eventName}
-              </p>
-            )}
-          </div>
 
-          <div className="relative p-5 -mt-7">
-            <p className="font-poppins text-sm font-regular -mt-6">Type of Event<span className="text-red-800">*</span></p>
-            <select
-              value={formData.eventType}
-              onChange={handleTypeofEventChange}
-              className="p-2 w-[20rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[12px]"
-
-            >
-              <option value="One-Time">One-Time</option>
-              <option value="Series">Series</option>
-            </select>
-          </div>
-
-          <div className="relative p-5 -mt-7">
-            <p className="font-poppins text-sm font-regular -mt-6">Event Description <span className="text-red-800">*</span></p>
-            <textarea
-              placeholder='Enter Description'
-              name="eventDescription"
-              value={formData.eventDescription}
-              onChange={handleInputChange}
-              className="p-2 w-[20rem] h-[60px] rounded-2xl border-[1.5px] border-black resize-none text-[12px]"
-            />
-
-            {formErrors.eventDescription && (
-              <p className="text-red-800 text-xs font-poppins">
-                {formErrors.eventDescription}
-              </p>
-            )}
-          </div>
-
-          <div className="relative p-5 -mt-10">
-            <p className="font-poppins text-sm font-regular -mt-5">Department<span className="text-red-800">*</span></p>
-            <select
-              value={formData.department}
-              onChange={handleDepartmentChange}
-              className="p-2 w-[20rem] h-[32px] rounded-2xl  border-[1.5px] border-black text-[12px]"
-
-            >
-              <option value="CEA">CEA</option>
-              <option value="CMBA">CMBA</option>
-              <option value="CASE">CASE</option>
-              <option value="CNAHS">CNAHS</option>
-              <option value="CCS">CCS</option>
-              <option value="CCJ">CCJ</option>
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <div className="relative p-5 -mt-7">
-            <p className="font-poppins text-sm font-regular -mt-6 ">Start Date <span className="text-red-800">*</span></p>
-            <div className='relative'></div>
-            {formErrors.startDate && (
-              <div className="relative  left-0 mt-2">
-                <p className=" text-red-800 text-xs font-poppins w-40">
-                  {formErrors.startDate}
-                </p>
-              </div>
-            )}
-            <div className="relative">
-              <input
-                type='text'
-                placeholder='Select Date and Time'
-                value={formData.startDate ? `${formData.startDate.toLocaleDateString()} ${formData.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
-                readOnly
-                className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
+          {showStartCalendar && (
+            <div className="absolute top-full left-0  z-10">
+              <DatePicker
+                inline
+                selected={formData.startDate}
+                onChange={(date) => handleDateChange(date, 'start')}
+                showTimeSelect
+                timeFormat="h:mm aa"
+                timeIntervals={30}
+                timeCaption="Time"
+                dateFormat="MMMM d, yyyy h:mm aa"
+                className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
               />
-              <img
-                src="/calendar.png"
-                alt="Calendar"
-                className="absolute top-0 right-20 m-2 cursor-pointer w-[15px] mr-[30rem]"
-                onClick={() => {
-                  setShowStartCalendar(!showStartCalendar);
-                  setShowEndCalendar(false);
-                }}
-              />
-              {showStartCalendar && (
-                <div className="absolute top-full left-0 mt-2 z-10">
-                  <DatePicker
-                    inline
-                    selected={formData.startDate}
-                    onChange={(date) => handleDateChange(date, 'start')}
-                    showTimeSelect
-                    timeFormat="h:mm aa"
-                    timeIntervals={30}
-                    timeCaption="Time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
-                  />
-                </div>
-              )}
-              {showEndCalendar && (
-                <div className="absolute top-full left-0 mt-2 z-10">
-                  <DatePicker
-                    inline
-                    selected={formData.endDate}
-                    onChange={(date) => handleDateChange(date, 'end')}
-                    showTimeSelect
-                    timeFormat="h:mm aa"
-                    timeIntervals={15}
-                    timeCaption="Time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
-                  />
-                </div>
-              )}
             </div>
-          </div>
-
-          <div className="absolute  p-5 mt-[16.4rem] ml-[11rem]">
-            <p className="font-poppins text-sm font-regular -mt-6">End Date <span className="text-red-800">*</span></p>
-            {formErrors.endDate && (
-              <div className="relative  left-0 mt-2">
-                <p className=" text-red-800 text-xs font-poppins w-40">
-                  {formErrors.endDate}
-                </p>
-              </div>
-            )}
-            <div className="relative">
-              <input
-                type='text'
-                placeholder='Select Date and Time'
-                value={formData.endDate ? `${formData.endDate.toLocaleDateString()} ${formData.endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
-                readOnly
-                className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
+          )}
+          {showEndCalendar && (
+            <div className="absolute top-full left-0 z-10">
+              <DatePicker
+                inline
+                selected={formData.endDate}
+                onChange={(date) => handleDateChange(date, 'end')}
+                showTimeSelect
+                timeFormat="h:mm aa"
+                timeIntervals={15}
+                timeCaption="Time"
+                dateFormat="MMMM d, yyyy h:mm aa"
+                className="border-[1px] border-black mt-[5px] w-[16rem] font-regular text-[10px] rounded-2xl text-center"
               />
-              <img
-                src="/calendar.png"
-                alt="Calendar"
-                className="relative -top-[2rem] right-[254px] m-2 cursor-pointer w-[15px] ml-[23.5rem]"
-                onClick={() => {
-                  setShowEndCalendar(!showEndCalendar);
-                  setShowStartCalendar(false);
-                }}
-              />
-
             </div>
-          </div>
+          )}
+
+
+
+
         </div>
 
 
-        <div className=' font-bold -mt-[25rem] ' >
-          <Button
-            onClick={() => {
-              onClose();
-              setFormErrors({});
-              setShowStartCalendar(false);
-              setShowEndCalendar(false);
-            }} style={{ color: 'black', fontSize: '25px', marginLeft: '43rem' }}>X</Button>
 
-          <div className="grid grid-cols-1 gap-5">
-
-            <div className="relative p-5 mt-[1rem] ml-[28.5rem] rounded-2xl border-[2px] border-customYellow" style={{ width: '12rem', height: '12rem' }}>
-              <div className="relative" style={{ width: '100%', height: '100%' }}>
-                <VisuallyHiddenInput
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                />
-                {formData.eventPicture && (
-                  <img
-                    src={formData.eventPicture.toString()}
-                    alt="Uploaded"
-                    className="absolute top-0 left-0 w-full h-full object-cover rounded"
-                    style={{ objectFit: 'cover' }}
-                  />
-                )}
-
-                {!formData.eventPicture && (
-                  <div className="absolute top-0 left-0 w-full h-full"></div>
-                )}
-                <Button
-                  component="label"
-                  role={undefined}
-                  tabIndex={-1}
-                  style={{
-                    marginTop: '10.5rem',
-                    fontSize: '11px',
-                    color: 'black',
-                    fontWeight: 'bold',
-                    textDecoration: 'underline',
-                    textTransform: 'none',
-                    marginRight: '-1.5rem',
-                    outline: 'none'
-                  }}
-                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                >
-                  Upload Event Picture
-                </Button>
-              </div>
-            </div>
-            <div className=' ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { createEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "CREATING..." : "CREATE"}</Button>
-            </div>
-          </div>
-        </div>
       </div>
     </Modal>
   );
