@@ -464,7 +464,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               <input
                 type='text'
                 placeholder='Select Date and Time'
-                value={formData.eventStarts ? formData.eventStarts.toLocaleString() : ''}
+                value={formData.eventEnds ? formData.eventEnds.toLocaleString() : ''}
                 readOnly
                 className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
               />
