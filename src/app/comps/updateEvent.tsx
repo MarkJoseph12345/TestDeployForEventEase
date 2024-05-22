@@ -36,6 +36,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   const [showEndCalendar, setShowEndCalendar] = useState(false);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [formData, setFormData] = useState({
+    eventid: null as number | null,
     eventName: "",
     eventType: "One-Time",
     eventDescription: "",
@@ -55,6 +56,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
         const response = await axios.get(`${API_ENDPOINTS.GET_EVENT_BY_ID}${id}`);
         const eventData = response.data;
         setFormData({
+          eventid: eventData.id || null,
           eventName: eventData.eventName || "",
           eventType: eventData.eventType || "One-Time",
           eventDescription: eventData.eventDescription || "",
@@ -144,45 +146,37 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
       }));
     }
 
-    const currentDate = new Date();
-    if (type === 'start' && date && date < currentDate) {
+    if (type === 'start' && date && date < new Date()) {
       setFormErrors(prevErrors => ({
         ...prevErrors,
         startDate: 'Start date cannot be before the current date'
       }));
-    }
-
-    if (type === 'end' && date && formData.startDate && date < formData.startDate) {
+    } else if (type === 'end' && date && formData.startDate && date < formData.startDate) {
       setFormErrors(prevErrors => ({
         ...prevErrors,
         endDate: 'End date cannot be before the start date'
       }));
-    }
-
-    if (type === 'start') {
-      setFormData({
-        ...formData,
-        eventStarts: date
-      });
     } else {
-      setFormData({
-        ...formData,
-        eventEnds: date
-      });
-    }
-
-    if (formData.startDate && type === 'start') {
-      if (date && date.getTime()) {
-        setShowStartCalendar(false);
+      if (type === 'start') {
+        setFormData(prevData => ({
+          ...prevData,
+          eventStarts: date
+        }));
+      } else {
+        setFormData(prevData => ({
+          ...prevData,
+          eventEnds: date
+        }));
       }
-    }
 
-    if (formData.endDate && type === 'end') {
-      if (date && date.getTime()) {
+      if (type === 'start') {
+        setShowStartCalendar(false);
+      } else {
         setShowEndCalendar(false);
       }
     }
   };
+
 
   const [secFormData, setSecFormData] = useState(new FormData());
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -221,7 +215,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   const [loading, setLoading] = useState(false);
 
 
- 
+
   const updateEventFunction = async () => {
     setLoading(true);
     const requiredErrorMessages: FormErrors = {
@@ -299,7 +293,25 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
+  const deleteEventFunction = async (id: number | null) => {
 
+    if (id === null) {
+      console.error('Event ID is null');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      console.log("to be fixed")
+      // const response = await axios.delete(`${API_ENDPOINTS.DELETE_EVENT}${id}`);
+      // console.log('Event deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Modal
@@ -393,7 +405,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               <input
                 type='text'
                 placeholder='Select Date and Time'
-                value={formData.eventStarts ? `${formData.eventStarts.toLocaleDateString()} ${formData.eventStarts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                value={formData.eventStarts ? formData.eventStarts.toLocaleString() : ''}
                 readOnly
                 className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
               />
@@ -452,7 +464,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               <input
                 type='text'
                 placeholder='Select Date and Time'
-                value={formData.eventEnds ? `${formData.eventEnds.toLocaleDateString()} ${formData.eventEnds.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                value={formData.eventStarts ? formData.eventStarts.toLocaleString() : ''}
                 readOnly
                 className="p-1 w-[9rem] h-[32px] rounded-2xl border-[1.5px] border-black text-[10px]"
               />
@@ -521,9 +533,15 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
                 </Button>
               </div>
             </div>
-            <div className=' ml-[37rem] h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white'>
-              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
+            <div className='flex flex-row gap-1 ml-[30rem] h-[2rem] mt-[5rem] '>
+              <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
+                <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
+              </div>
+              <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
+              <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { deleteEventFunction(formData.eventid) }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "DELETING..." : "DELETE"}</Button>
             </div>
+            </div>
+
           </div>
         </div>
       </div>
