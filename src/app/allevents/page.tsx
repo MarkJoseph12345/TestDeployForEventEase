@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { withAuth } from '../protection.js';
 import dynamic from 'next/dynamic';
+import LoadingPage from '../comps/LoadingPage.tsx';
 
 const StudentAllEventsPage = dynamic(() => import('./studentAllEventsPage.tsx'), {
-    loading: () => <p>Loading...</p>,
+    loading: () => <LoadingPage />,
 });
 
 const AdminAllEventsPage = dynamic(() => import('./adminAllEventsPage.tsx'), {
-    loading: () => <p>Loading...</p>,
+    loading: () => <LoadingPage />,
 });
 
 const AllEvents = () => {

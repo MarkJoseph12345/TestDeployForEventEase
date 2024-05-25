@@ -277,12 +277,12 @@ const CreateEventModal = ({ visible, onClose }: any) => {
       >
         <div className="absolute top-0 right-0 z-20">
           <Button
-          onClick={() => {
-            onClose();
-            setFormErrors({});
-            setShowStartCalendar(false);
-            setShowEndCalendar(false);
-          }} style={{ color: 'black', fontSize: '25px', }} >X</Button>
+            onClick={() => {
+              onClose();
+              setFormErrors({});
+              setShowStartCalendar(false);
+              setShowEndCalendar(false);
+            }} style={{ color: 'black', fontSize: '25px', }} >X</Button>
         </div>
 
         <div className="grid grid-cols-2 relative z-10 w-full">
@@ -417,9 +417,9 @@ const CreateEventModal = ({ visible, onClose }: any) => {
 
           <div className=' font-bold relative flex flex-col items-center justify-center w-full'  >
 
-            <div>
-              <div className="relative p-5 mt-[1rem]  rounded-2xl border-[2px] border-customYellow" style={{ width: '12rem', height: '12rem' }}>
-                <div className="relative" style={{ width: '100%', height: '100%' }}>
+            <div className="flex flex-col">
+              <div className="relative mt-[1rem]  rounded-2xl border-[2px] border-customYellow h-[14rem] w-[14rem]">
+                <div className="relative w-full h-full">
                   <VisuallyHiddenInput
                     type="file"
                     accept="image/*"
@@ -430,34 +430,27 @@ const CreateEventModal = ({ visible, onClose }: any) => {
                     <img
                       src={formData.eventPicture.toString()}
                       alt="Uploaded"
-                      className="absolute top-0 left-0 w-full h-full object-cover rounded"
-                      style={{ objectFit: 'cover' }}
+                      className="w-full h-full object-cover rounded-2xl"
                     />
                   )}
-
-                  {!formData.eventPicture && (
-                    <div className="absolute top-0 left-0 w-full h-full"></div>
-                  )}
-                  <Button
-                    component="label"
-                    role={undefined}
-                    tabIndex={-1}
-                    style={{
-                      marginTop: '10.5rem',
-                      fontSize: '11px',
-                      color: 'black',
-                      fontWeight: 'bold',
-                      textDecoration: 'underline',
-                      textTransform: 'none',
-                      marginRight: '-1.5rem',
-                      outline: 'none'
-                    }}
-                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                  >
-                    Upload Event Picture
-                  </Button>
                 </div>
               </div>
+              <Button
+                component="label"
+                role={undefined}
+                tabIndex={-1}
+                style={{
+                  fontSize: '11px',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  textDecoration: 'underline',
+                  textTransform: 'none',
+                  outline: 'none'
+                }}
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              >
+                Upload Event Picture
+              </Button>
             </div>
             <div>
               <div className=' h-[2rem] mt-[3rem] bg-customYellow rounded-xl w-[6rem] text-center textcolor-white absolute bottom-0 right-0'>

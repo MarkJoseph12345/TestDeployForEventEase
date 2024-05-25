@@ -4,7 +4,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Link from "next/link";
 import axios, { AxiosError } from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../api";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,7 @@ interface FormData {
     firstName: string;
     lastName: string;
     department: string;
+    IdNumber: string;
 }
 
 interface FormErrors {
@@ -22,9 +23,17 @@ interface FormErrors {
     username?: string;
     department?: string;
     password?: string;
+    IdNumber?: string;
 }
 
 const SignUp = () => {
+    useEffect(() => {
+        const token = window.localStorage.getItem('token');
+        if (token) {
+            router.push('/dashboard');
+        }
+    }, []);
+
     const router = useRouter();
     const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
     const [formData, setFormData] = useState<FormData>({
@@ -32,7 +41,8 @@ const SignUp = () => {
         password: "",
         firstName: "",
         lastName: "",
-        department: "CEA"
+        department: "CEA",
+        IdNumber: ""
     });
     const [formErrors, setFormErrors] = useState<FormErrors>({});
     const [loading, setLoading] = useState(false);
@@ -71,6 +81,10 @@ const SignUp = () => {
         // Validate email
         if (!isValidEmail(formData.username)) {
             errors.username = "Please enter a valid email address.";
+        }
+
+        if (!formData.lastName.trim()) {
+            errors.lastName = "Last name is required.";
         }
 
         // Validate department
@@ -148,40 +162,27 @@ const SignUp = () => {
             ...formData,
             department: value
         });
-
-        // Validate department and update error state
-        const errors = { ...formErrors };
-        if (!value) {
-            errors.department = "Department is required.";
-        } else {
-            delete errors.department;
-        }
-
-        setFormErrors(errors);
     };
+
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setLoading(true);
 
-        // Validate the form data before submission
+
         const isFormValid = validateFormData();
         if (!isFormValid) {
             setLoading(false);
-            return; // Prevent form submission if the form is invalid
+            return;
         }
 
         try {
-            const response = await axios.post(API_ENDPOINTS.REGISTER, formData);
-            console.log("Registration successful:", response.data);
 
-            const loginResponse = await axios.post(API_ENDPOINTS.LOGIN, {
+            const response = await axios.post(API_ENDPOINTS.REGISTER, formData);
+            await axios.post(API_ENDPOINTS.LOGIN, {
                 username: formData.username,
                 password: formData.password
             });
-
-            console.log("Login successful:", loginResponse.data);
-            console.log("Login successful:", response.data);
             const authToken = response.data.token;
             const role = response.data.user.role;
             const name = response.data.user.firstName;
@@ -192,41 +193,47 @@ const SignUp = () => {
             window.localStorage.setItem("name", name);
             window.localStorage.setItem("userid", userid);
             window.localStorage.setItem("department", department);
+            const defaultImage = 'defaultpic.png';
+            fetch(defaultImage)
+                .then(response => response.blob())
+                .then(blob => {
+                    const defaultFormData = new FormData();
+                    defaultFormData.append('image', blob, 'defaultpic.png');
+                    axios.put(`${API_ENDPOINTS.UPDATE_PROFILE_PICTURE}${userid}`, defaultFormData)
+                });
             router.push('/dashboard')
             setFormData({
                 username: "",
                 password: "",
                 firstName: "",
                 lastName: "",
-                department: ""
+                department: "CEA",
+                IdNumber: ""
             });
             setFormErrors({});
-        } catch (error) {
-            const axiosError = error as AxiosError;
-            console.error("Registration failed:", axiosError.response?.data);
         } finally {
             setLoading(false);
         }
     };
     return (
-        <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] h-screen w-screen flex items-center lg:justify-start justify-center lg:px-60">
-            <div className={`h-[600px] w-[500px] bg-black rounded-2xl lg:p-6 p-4 absolute top-[15%]`} >
+        <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] min-h-screen flex items-center lg:justify-start justify-center lg:px-60">
+            <div className={`h-fit w-[31.25rem] bg-black rounded-2xl lg:p-6 p-4 `} >
                 <form onSubmit={handleSubmit} method="post" className="bg-customYellow h-full w-full flex flex-col items-center justify-between py-3 gap-5 shadow-inner">
                     <div className="flex flex-col items-center">
                         <h1 className="text-3xl font-extrabold">CREATE AN ACCOUNT</h1>
                         <p className="font-poppins font-light">Create an account to explore exciting events.</p>
                     </div>
-                    <div className="flex justify-between gap-10 w-full px-4">
-                        <div className="w-[63%]">
-                            <p className="font-poppins text-sm font-bold ">First Name<span className="text-red-800">*</span></p>
+                    <div className="flex justify-between w-5/6">
+                        <div className="flex-grow w-full">
+                            <label htmlFor="firstName" className="font-poppins text-sm font-bold ">First Name<span className="text-red-800">*</span></label>
                             <input
+                                id="firstName"
                                 type="text"
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleInputChange}
                                 placeholder="Enter First Name"
-                                style={{ fontSize: '13px' }}
-                                className="w-40 h-[37px] rounded-2xl border-2 border-black px-2"
+                                className="w-40 h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
                             />
                             {formErrors.firstName && (
                                 <p className="text-red-800 text-xs font-poppins ">
@@ -235,15 +242,16 @@ const SignUp = () => {
                             )}
                         </div>
                         <div>
-                            <p className="font-poppins text-sm font-bold ">Last Name<span className="text-red-800">*</span></p>
+                            <label htmlFor="lastName" className="font-poppins text-sm font-bold ">Last Name<span className="text-red-800">*</span></label>
                             <input
+                                id="lastName"
                                 type="text"
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleInputChange}
                                 placeholder="Enter Last Name"
-                                style={{ fontSize: '13px' }}
-                                className="w-40 h-[37px] rounded-2xl border-2 border-black px-2" />
+                                className="w-40 h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
+                            />
                             {formErrors.lastName && (
                                 <p className="text-red-800 text-xs font-poppins">
                                     {formErrors.lastName}
@@ -252,15 +260,16 @@ const SignUp = () => {
                         </div>
                     </div>
                     <div className="w-5/6">
-                        <p className="font-poppins text-sm font-bold">Username/Email Address<span className="text-red-800">*</span></p>
+                        <label htmlFor="username" className="font-poppins text-sm font-bold">Username/Email Address<span className="text-red-800">*</span></label>
                         <input
                             type="text"
                             name="username"
+                            id="username"
                             value={formData.username}
                             onChange={handleInputChange}
                             placeholder="Enter Username/Email Address"
-                            style={{ fontSize: '13px', marginLeft: '2px' }}
-                            className="w-full h-[37px] rounded-2xl border-2 border-black px-2" />
+                            className="w-full h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
+                        />
                         {formErrors.username && (
                             <p className="text-red-800 text-xs font-poppins ">
                                 {formErrors.username}
@@ -268,10 +277,28 @@ const SignUp = () => {
                         )}
                     </div>
                     <div className="w-5/6">
-                        <p className="font-poppins text-sm font-bold">Department<span className="text-red-800">*</span></p>
+                        <label htmlFor="IdNumber" className="font-poppins text-sm font-bold">ID Number</label>
+                        <input
+                            type="text"
+                            name="IdNumber"
+                            id="IdNumber"
+                            value={formData.IdNumber}
+                            onChange={handleInputChange}
+                            placeholder="Enter ID Number"
+                            className="w-full h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
+                        />
+                        {formErrors.IdNumber && (
+                            <p className="text-red-800 text-xs font-poppins ">
+                                {formErrors.IdNumber}
+                            </p>
+                        )}
+                    </div>
+                    <div className="w-5/6">
+                        <label htmlFor="department" className="font-poppins text-sm font-bold">Department<span className="text-red-800">*</span></label>
                         <select
                             value={formData.department}
                             onChange={handleDepartmentChange}
+                            id="department"
                             className="w-full h-[37px] rounded-2xl border-2 border-black px-2">
                             <option value="CEA">CEA</option>
                             <option value="CMBA">CMBA</option>
@@ -287,11 +314,12 @@ const SignUp = () => {
                         )}
                     </div>
                     <div className="w-5/6 mb-2">
-                        <p className="font-poppins text-sm font-bold">Password<span className="text-red-800">*</span></p>
+                        <label htmlFor="password" className="font-poppins text-sm font-bold">Password<span className="text-red-800">*</span></label>
                         <div className="relative box-border">
                             <input
                                 type={showLoginPassword ? "text" : "password"}
                                 name="password"
+                                id="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
                                 placeholder="Enter Password"

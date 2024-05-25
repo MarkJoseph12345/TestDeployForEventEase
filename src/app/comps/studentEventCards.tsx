@@ -136,27 +136,37 @@ const StudentEventCards = () => {
         fetchData();
     }, []);
 
-    const [loading, setLoading] = useState(false);
-    const handleJoinEvent = async (userId: string | null, eventId: number) => {
-        setLoading(true)
+    const [loadingStates, setLoadingStates] = useState<boolean[]>(Array(studentPageCards.length).fill(false));
+    const handleJoinEvent = async (userId: string | null, eventId: number, index: number) => {
+        setLoadingStates(prevStates => {
+            const updatedStates = [...prevStates]; // Create a copy of the loading states array
+            updatedStates[index] = true; // Set the loading state of the specific event to true
+            return updatedStates; // Return the updated loading states array
+        });
         try {
             const response = await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);
             if (response.status === 200) {
                 console.log('Successfully joined event');
                 const joinedResponse = await axios.get(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${userid}`);
 
-                    if (joinedResponse.status === 200) {
-                        setJoinedEvents(joinedResponse.data);
-                    }
+                if (joinedResponse.status === 200) {
+                    setJoinedEvents(joinedResponse.data);
+                }
             } else {
                 console.error('Failed to join event');
             }
         } catch (error) {
             console.error('Error joining event:', error);
         } finally {
-            setLoading(false)
+            setLoadingStates(prevStates => {
+                const updatedStates = [...prevStates]; 
+                updatedStates[index] = false;
+                return updatedStates;
+            });
         }
     };
+
+
 
     return (
         <div className="relative">
@@ -169,7 +179,6 @@ const StudentEventCards = () => {
                                 <div>{new Date(card.eventStarts).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
                                 <div className='text-[12px]'>{new Date(card.eventStarts).getDate()}</div>
                             </div>
-
                         </div>
                         <div className='flex flex-col'>
                             <p>Event Name: {card.eventName}</p>
@@ -178,7 +187,12 @@ const StudentEventCards = () => {
                             </div>
                         </div>
                         <div className='self-end'>
-                            <button className={` ${loading ? 'text-sm' : 'text-base'} font-bold rounded px-3 py-1 bg-customYellow `} onClick={() => handleJoinEvent(userid, card.id)} disabled={joinedEvents.some(event => event.id === card.id)}> {loading ? "Joining..." : joinedEvents.some(event => event.id === card.id) ? "Joined" : "Join"}
+                            <button
+                                className={` ${loadingStates[index] ? 'text-sm' : 'text-base'} font-bold rounded px-3 py-1 bg-customYellow `}
+                                 onClick={() => handleJoinEvent(userid, card.id, index)}
+                                disabled={joinedEvents.some(event => event.id === card.id)}
+                            >
+                                {loadingStates[index] ? "Joining..." : joinedEvents.some(event => event.id === card.id) ? "Joined" : "Join"}
                             </button>
                         </div>
                     </div>

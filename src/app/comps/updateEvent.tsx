@@ -211,12 +211,12 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   };
 
 
-  const [loading, setLoading] = useState(false);
-
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
 
   const updateEventFunction = async () => {
-    setLoading(true);
+    setUpdateLoading(true);
     const requiredErrorMessages: FormErrors = {
       eventName: !formData.eventName ? 'Event name is required' : '',
       eventDescription: !formData.eventDescription ? 'Event description is required' : '',
@@ -224,7 +224,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
 
     if (!formData.eventName || !formData.eventDescription || !formData.eventStarts || !formData.eventEnds) {
       setFormErrors(requiredErrorMessages)
-      setLoading(false);
+      setUpdateLoading(false);
       return;
     }
 
@@ -234,8 +234,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
         ...requiredErrorMessages,
         startDate: "Start date and time must be in the future",
       });
-      console.log("Start time")
-      setLoading(false);
+      setUpdateLoading(false);
       return;
     }
     else {
@@ -250,8 +249,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
         ...requiredErrorMessages,
         endDate: "End date must be after start date",
       });
-      console.log("End time")
-      setLoading(false);
+      setUpdateLoading(false);
       return;
     }
     else {
@@ -274,18 +272,16 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
 
     try {
       const response = await axios.put(`${API_ENDPOINTS.UPDATE_EVENT}${id}`, updatedFormData);
-      console.log("Update successful:", response.data);
 
       if (selectedFile) {
         const pictureResponse = await axios.put(`${API_ENDPOINTS.UPDATE_EVENTPICTURE}${id}`, secFormData);
-        console.log("Image upload successful:", pictureResponse.data);
       }
       window.location.reload();
       onClose();
     } catch (error) {
       console.error('Error updating event:', error);
     } finally {
-      setLoading(false);
+      setUpdateLoading(false);
     }
   };
 
@@ -293,22 +289,14 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const deleteEventFunction = async (id: number | null) => {
-
-    if (id === null) {
-      console.error('Event ID is null');
-      return;
-    }
-
-    setLoading(true);
-
+    setDeleteLoading(true);
     try {
-      console.log("to be fixed")
-      // const response = await axios.delete(`${API_ENDPOINTS.DELETE_EVENT}${id}`);
-      // console.log('Event deleted successfully:', response.data);
+      const response = await axios.delete(`${API_ENDPOINTS.DELETE_EVENT}${id}`);
+      window.location.reload();
     } catch (error) {
       console.error('Error deleting event:', error);
     } finally {
-      setLoading(false);
+      setDeleteLoading(false);
     }
   };
 
@@ -401,13 +389,13 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               <div className="relative">
                 <p className="font-poppins text-sm font-regular">Start Date <span className="text-red-800">*</span></p>
                 <div className='relative'></div>
-                {formErrors.startDate && (
+                {/* {formErrors.startDate && (
                   <div className="relative">
                     <p className=" text-red-800 text-xs font-poppins w-40">
                       {formErrors.startDate}
                     </p>
                   </div>
-                )}
+                )} */}
                 <div className="relative">
                   <input
                     type='text'
@@ -430,13 +418,13 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
               </div>
               <div className="relative">
                 <p className="font-poppins text-sm font-regular ">End Date <span className="text-red-800">*</span></p>
-                {formErrors.endDate && (
+                {/* {formErrors.endDate && (
                   <div className="relative  left-0 ">
                     <p className=" text-red-800 text-xs font-poppins w-40">
                       {formErrors.endDate}
                     </p>
                   </div>
-                )}
+                )} */}
                 <div className="relative">
                   <input
                     type='text'
@@ -462,60 +450,52 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
           </div>
           <div className=' font-bold relative flex flex-col items-center justify-center w-full'  >
 
-            <div>
-            <div className="relative p-5 mt-[1rem]  rounded-2xl border-[2px] border-customYellow" style={{ width: '12rem', height: '12rem' }}>
-              <div className="relative" style={{ width: '100%', height: '100%' }}>
-                <VisuallyHiddenInput
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                />
-                {formData.eventPicture && (
-                  <img
-                    src={formData.eventPicture.toString()}
-                    alt="Uploaded"
-                    className="absolute top-0 left-0 w-full h-full object-cover rounded"
-                    style={{ objectFit: 'cover' }}
+          <div className="flex flex-col">
+              <div className="relative mt-[1rem]  rounded-2xl border-[2px] border-customYellow h-[14rem] w-[14rem]">
+                <div className="relative w-full h-full">
+                  <VisuallyHiddenInput
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
                   />
-                )}
-
-                {!formData.eventPicture && (
-                  <div className="absolute top-0 left-0 w-full h-full"></div>
-                )}
-                <Button
-                  component="label"
-                  role={undefined}
-                  tabIndex={-1}
-                  style={{
-                    marginTop: '10.5rem',
-                    fontSize: '11px',
-                    color: 'black',
-                    fontWeight: 'bold',
-                    textDecoration: 'underline',
-                    textTransform: 'none',
-                    marginRight: '-1.5rem',
-                    outline: 'none'
-                  }}
-                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                >
-                  Upload Event Picture
-                </Button>
+                  {formData.eventPicture && (
+                    <img
+                      src={formData.eventPicture.toString()}
+                      alt="Uploaded"
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
+                  )}
+                </div>
               </div>
-            </div>
+              <Button
+                component="label"
+                role={undefined}
+                tabIndex={-1}
+                style={{
+                  fontSize: '11px',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  textDecoration: 'underline',
+                  textTransform: 'none',
+                  outline: 'none'
+                }}
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              >
+                Upload Event Picture
+              </Button>
             </div>
             <div>
-            <div className='flex flex-row gap-1  mt-[3rem]'>
-              <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
-                <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }} disabled={loading} className={`${loading ? 'text-sm' : 'text-xl'}`}>{loading ? "UPDATING..." : "UPDATE"}</Button>
+              <div className='flex flex-row gap-1  mt-[3rem]'>
+                <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
+                  <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { updateEventFunction() }}   disabled={updateLoading || deleteLoading}  className={`${updateLoading ? 'text-sm' : 'text-xl'}`}>{updateLoading ? "UPDATING..." : "UPDATE"}</Button>
+                </div>
+                <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
+                  <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { deleteEventFunction(formData.eventid) }}   disabled={updateLoading || deleteLoading}  className={`${deleteLoading ? 'text-sm' : 'text-xl'}`}>{deleteLoading ? "DELETING..." : "DELETE"}</Button>
+                </div>
               </div>
-              <div className='bg-customYellow rounded-xl w-[6rem] text-center textcolor-white flex items-center justify-center '>
-                <Button style={{ color: 'black', fontWeight: 'bold', fontSize: '14px', outline: 'none' }} onClick={() => { deleteEventFunction(formData.eventid) }} disabled className={`${loading ? 'text-sm' : 'text-xl'}`}>DELETE</Button>
-              </div>
-            </div>
             </div>
           </div>
-
         </div>
 
         <div className="grid grid-cols-1 gap-5">
@@ -556,7 +536,7 @@ const UpdateEventModal = ({ visible, onClose, id }: { visible: boolean; onClose:
 
         </div>
 
-       
+
       </div>
     </Modal>
   );

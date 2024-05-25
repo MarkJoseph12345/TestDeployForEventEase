@@ -1,7 +1,7 @@
 "useclient"
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import CreateEventModal from './createEvent';
 import Link from 'next/link';
 import axios from 'axios';
@@ -21,6 +21,7 @@ const AdminSideBar = ({ isOpen = true }) => {
   const [isVisible, setIsVisible] = useState(isOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
+  const [profilepic, setProfilePic] = useState("")
 
   useEffect(() => {
     const userid = window.localStorage.getItem('userid');
@@ -28,8 +29,12 @@ const AdminSideBar = ({ isOpen = true }) => {
     const fetchUserById = async () => {
       try {
         const response = await axios.get(API_ENDPOINTS.GET_USER_BY_ID + userid);
-
         setUser(response.data)
+        const imgResponse = await axios.get(`${API_ENDPOINTS.GET_PROFILE_PICTURE}${userid}`, {
+          responseType: 'arraybuffer'
+        });
+        const base64Image = Buffer.from(imgResponse.data, 'binary').toString('base64');
+        setProfilePic(`data:image/png;base64,${base64Image}`);
       } catch (error) {
         console.error('Error fetching user:', error);
       }
@@ -77,6 +82,12 @@ const AdminSideBar = ({ isOpen = true }) => {
     };
   }, [openProfile]);
 
+  const adminLinks = [
+    { name: "Home", href: "/dashboard" },
+    { name: "Events", href: "/allevents" },
+  ]
+
+  const pathname = usePathname();
   return (
     <div>
       <div className={`fixed  w-[13rem] h-full bg-customYellow transition-all duration-500 ease-in-out ${isVisible ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -88,16 +99,22 @@ const AdminSideBar = ({ isOpen = true }) => {
         </button>
         <CreateEventModal visible={isModalOpen} onClose={handleModalClose} />
 
-        <div className='flex flex-col mt-5 ml-[4.5rem] gap-1'>
-          <Link href="/dashboard">Home</Link>
-          <Link href="/allevents">Events</Link>
+        <div className='flex flex-col w-full mt-5 items-center gap-1'>
+          {adminLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link href={link.href} key={link.name} className={`${isActive ? "bg-white border-r-4 border-black" : ""} p-4 block w-full text-center`}>
+                {link.name}
+              </Link>
+            )
+          })}
         </div>
-        <p onClick={profileClicked} className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex items-center w-full font-bold text-sm cursor-pointer"><img src="defaultpic.png" className="w-19 h-19" />{user?.firstName} {user?.lastName}</p>
+        <p onClick={profileClicked} className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex items-center w-full font-bold text-sm cursor-pointer gap-1"><img src={profilepic} className="object-fill rounded-full w-14 h-14" />{user?.firstName}<br/>{user?.lastName}</p>
         {openProfile && (
-          <div ref={profileRef} className='w-[90%] bg-white rounded absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col'>
+          <div ref={profileRef} className='w-[90%] bg-white rounded absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col p-1'>
             <div className='flex items-center'>
               <div>
-                <img src="defaultpic.png" className="w-12 h-12" />
+                <img src={profilepic} className="rounded-full object-fill w-12 h-12" />
               </div>
               <div className="flex flex-col items-center">
                 <p>{user?.firstName}</p>
