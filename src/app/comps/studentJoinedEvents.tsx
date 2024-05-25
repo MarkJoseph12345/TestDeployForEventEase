@@ -138,12 +138,7 @@ const StudentAllJoinedEventCards = () => {
     const handleJoinEvent = async (userId: string | null, eventId: number) => {
         setLoading(true)
         try {
-            const response = await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);
-            if (response.status === 200) {
-                console.log('Successfully joined event');
-            } else {
-                console.error('Failed to join event');
-            }
+            await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);
         } catch (error) {
             console.error('Error joining event:', error);
         } finally {

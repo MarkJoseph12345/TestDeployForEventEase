@@ -105,9 +105,9 @@ const JoinEventModal = ({ visible, onClose }: any) => {
   const [loadingStates, setLoadingStates] = useState<boolean[]>(Array(studentPageCards.length).fill(false));
   const handleJoinEvent = async (userId: string | null, eventId: number, index: number) => {
     setLoadingStates(prevStates => {
-      const updatedStates = [...prevStates]; // Create a copy of the loading states array
-      updatedStates[index] = true; // Set the loading state of the specific event to true
-      return updatedStates; // Return the updated loading states array
+      const updatedStates = [...prevStates];
+      updatedStates[index] = true;
+      return updatedStates;
     });
     try {
       const response = await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);

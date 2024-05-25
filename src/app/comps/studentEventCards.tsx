@@ -146,7 +146,6 @@ const StudentEventCards = () => {
         try {
             const response = await axios.post(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`);
             if (response.status === 200) {
-                console.log('Successfully joined event');
                 const joinedResponse = await axios.get(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${userid}`);
 
                 if (joinedResponse.status === 200) {

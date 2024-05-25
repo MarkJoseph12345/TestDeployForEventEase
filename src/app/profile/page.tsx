@@ -114,8 +114,7 @@ const Profile = () => {
     const handleFileUpload = async () => {
         try {
             await axios.put(`${API_ENDPOINTS.UPDATE_PROFILE_PICTURE}${user.id}`, profileToUpload);
-            //window.location.reload()
-            console.log(profileToUpload)
+            window.location.reload()
         } catch (error) {
             console.error("Error uploading file:", error);
         }
