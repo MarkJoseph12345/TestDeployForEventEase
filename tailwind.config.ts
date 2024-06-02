@@ -30,6 +30,7 @@ const config: Config = {
       },
       fontFamily: {
         'poppins': ['Poppins', 'sans-serif'],
+        'bebas': ['Bebas Neue', 'cursive'],
       },
     },
   },

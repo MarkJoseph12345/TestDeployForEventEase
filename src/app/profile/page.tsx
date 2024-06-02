@@ -1,9 +1,9 @@
 "use client"
 
-import { ChangeEvent, SetStateAction, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import StudentSideBar from "../comps/studentSidebar";
 import { API_ENDPOINTS } from "../api";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import AdminSideBar from "../comps/adminSidebar";
 import LoadingPage from "../comps/LoadingPage";
 import { withAuth } from "../protection";

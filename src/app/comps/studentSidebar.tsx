@@ -85,6 +85,8 @@ const StudentSideBar = ({ isOpen = true }) => {
     { name: "Home", href: "/dashboard" },
     { name: "Events", href: "/allevents" },
     { name: "Joined", href: "/joinedevents" },
+    { name: "Calendar", href: "/calendar"},
+    { name: "QR Code", href: "/qr"},
   ]
 
   const pathname = usePathname();

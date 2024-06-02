@@ -31,7 +31,6 @@ const JoinedEvents = () => {
         <div className='flex w-full h-screen ' style={{ overflowY: 'hidden' }}>
             <div className='w-48'>
                 <StudentSideBar isOpen={true} />
-                <img src="/honeyd.png" className="fixed -bottom-2 -right-[1.7rem] w-[20rem] h-[20rem] p-2 ml-[11.4rem] -mt-3" />
             </div>
             <div className='flex flex-col w-full'>
                 <div className='bg-customWhite ml-[2rem] flex-1 mt-[2.6rem]' style={{ overflowY: 'auto' }}>
