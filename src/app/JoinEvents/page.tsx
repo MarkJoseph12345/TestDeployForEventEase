@@ -1,10 +1,11 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StudentSidebar from "../Comps/Sidebar";
 import { Event } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
 import { events } from "../../utils/testdata";
 import StudentEventsFilteredList from "../Comps/StudentEvents";
+import Loading from "../Loader/Loading";
 
 
 const JoinEvents = () => {
@@ -19,6 +20,18 @@ const JoinEvents = () => {
         setSelectedEvent(null);
     };
 
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
     return (
         <div>
             <StudentSidebar />

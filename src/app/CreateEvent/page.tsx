@@ -1,9 +1,10 @@
 "use client"
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { Event } from '@/utils/interfaces';
 import Sidebar from '../Comps/Sidebar';
+import Loading from '../Loader/Loading';
 
 const departments = ['CEA', 'CMBA', 'CASE', 'CNAHS', 'CCS', 'CCJ'];
 
@@ -104,6 +105,21 @@ const CreateEvent = () => {
     const handleCreateEvent = () => {
         alert(JSON.stringify(event, null, 2));
     };
+
+    
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
     return (
         <div>
             <Sidebar />

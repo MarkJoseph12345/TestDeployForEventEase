@@ -1,6 +1,7 @@
 "use client"
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Sidebar from '../Comps/Sidebar';
+import Loading from '../Loader/Loading';
 
 const ProfilePopup = ({ picture, onClose }: any) => {
 
@@ -29,10 +30,10 @@ const ProfilePopup = ({ picture, onClose }: any) => {
             onClose();
         }
     };
-
+    
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-            <div className="bg-white p-2 rounded-md shadow-md w-11/12 max-h-[95%] overflow-auto relative">
+            <div className="bg-white p-2 rounded-md shadow-md w-11/12 max-h-[95%] overflow-auto relative laptop:max-w-[50rem]">
                 <p className="sticky top-0 text-end text-gray-500 font-bold text-2xl" onClick={handleClose}>✖</p>
                 <img src={newPicture || picture} className="mx-auto w-72 h-72 object-cover" />
                 <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
@@ -59,6 +60,19 @@ const Profile = () => {
     const handleClosePopup = () => {
         setClickedProfilePic("");
     };
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
     return (
         <div className="bg-gray-200 h-screen text-center pb-4 smartphone:h-fit tablet:h-screen">
             <Sidebar />

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { User } from '@/utils/interfaces';
 import { users } from "@/utils/testdata";
 import Sidebar from '../Comps/Sidebar';
+import Loading from '../Loader/Loading';
 
 const ManageUsers = () => {
     const [userList, setUserList] = useState<User[]>(users);
@@ -52,6 +53,18 @@ const ManageUsers = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [dropdownRef]);
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <div>

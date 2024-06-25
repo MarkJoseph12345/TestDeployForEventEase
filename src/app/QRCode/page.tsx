@@ -1,7 +1,8 @@
 "use client"
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRComponent from "react-qr-code";
 import Sidebar from "../Comps/Sidebar";
+import Loading from "../Loader/Loading";
 
 const QRCode = () => {
     const qrRef = useRef<HTMLDivElement>(null);
@@ -31,6 +32,19 @@ const QRCode = () => {
             }
         }
     };
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
 
     return (
         <div className="flex flex-col h-screen">

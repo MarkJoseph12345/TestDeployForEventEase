@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -12,6 +12,7 @@ import {
     ArcElement
 } from 'chart.js';
 import Sidebar from '../Comps/Sidebar';
+import Loading from '../Loader/Loading';
 
 ChartJS.register(
     CategoryScale,
@@ -82,6 +83,19 @@ const ReportsAndAnalysis: React.FC = () => {
         ],
     };
 
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
+    
     return (
         <div>
             <Sidebar />

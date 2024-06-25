@@ -4,6 +4,7 @@ import { Event } from "../../utils/interfaces";
 import AdminEventDetailModal from "../Modals/AdminEventDetailModal";
 import { events } from "../../utils/testdata";
 import Sidebar from "../Comps/Sidebar";
+import Loading from "../Loader/Loading";
 
 const ManageEvents = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -56,6 +57,18 @@ const ManageEvents = () => {
         (selectedFilters.classification.length === 0 || selectedFilters.classification.includes(event.type[1])) &&
         (selectedFilters.departments.length === 0 || selectedFilters.departments.every(department => event.department.includes(department)))
     );
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <div>

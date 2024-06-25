@@ -1,10 +1,11 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Event } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
 import { events } from "../../utils/testdata";
 import StudentEventsFilteredList from "../Comps/StudentEvents";
 import Sidebar from "../Comps/Sidebar";
+import Loading from "../Loader/Loading";
 
 const RegisteredEvents = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -17,6 +18,19 @@ const RegisteredEvents = () => {
     const handleClosePopup = () => {
         setSelectedEvent(null);
     };
+
+     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
 
     return (
         <div>
