@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/Login", request.url));
   }
 
-  if (token && (pathname.toLowerCase() === "/login" || pathname.toLowerCase() === "/signup")) {
+  if (token && (pathname.toLowerCase() === "/login" || pathname.toLowerCase() === "/signup" || pathname.toLowerCase() === "/dashboard")) {
     return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
 
