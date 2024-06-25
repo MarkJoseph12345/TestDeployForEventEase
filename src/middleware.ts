@@ -11,6 +11,7 @@ const properCasing = (path: string) => {
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
   const { pathname } = request.nextUrl;
+  
 
   const adminRoutes = ["/CreateEvent", "/ManageEvents", "/ManageUsers", "/ReportsAndAnalysis"]
   const studentRoutes = ["/AttendedEvents", "/JoinEvents", "/QRCode", "/RegisteredEvents"]
