@@ -16,6 +16,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/SignUp", request.url));
   }
 
+  if (!token && pathname.toLowerCase() === "/login" && pathname !== "/Login") {
+    return NextResponse.redirect(new URL("/Login", request.url));
+  }
+
   if (!token && pathname.toLowerCase() !== "/login" && pathname.toLowerCase() !== "/signup") {
     return NextResponse.redirect(new URL("/Login", request.url));
   }
