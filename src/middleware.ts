@@ -28,7 +28,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
 
-  if (token && pathname.toLowerCase() === "/dashboard") {
+  if (token && pathname.toLowerCase() === "/dashboard" && pathname !== "/Dashboard") {
     return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
 
