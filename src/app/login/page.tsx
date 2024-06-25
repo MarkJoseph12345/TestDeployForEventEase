@@ -1,147 +1,92 @@
-'use client'
-
-
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import axios, { AxiosError } from "axios";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { API_ENDPOINTS } from "../api";
-
-interface FormErrors {
-    username?: string;
-    password?: string;
-}
+"use client"
+import { User } from "@/utils/interfaces"
+import Link from "next/link"
+import { useState } from "react"
+import { setCookie } from "@/utils/cookies"
+import { users } from "@/utils/data"
 
 const Login = () => {
-    useEffect(() => {
-        const token = window.localStorage.getItem('token');
-        if (token) {
-            router.push('/dashboard');
-        }
-    }, []);
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [formErrors, setFormErrors] = useState<FormErrors>({});
-    const [showLoginPassword, setShowLoginPassword] = useState(false);
-    const handleClickShowPassword = () => {
-        setShowLoginPassword(!showLoginPassword);
-    };
 
-    const [formData, setFormData] = useState({
+
+    const [userForm, setUserForm] = useState<User>({
         username: "",
         password: "",
-    });
+        firstName: "",
+        lastName: "",
+        department: "CEA",
+        IdNumber: "",
+    })
+    const [message, setMessage] = useState<{ text: string, type: "success" | "error" } | undefined>();
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+        const { name, value } = e.target;
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
+        setUserForm({
+            ...userForm,
+            [name]: value
         });
+    }
+
+    const closeAlert = () => {
+        setMessage(undefined);
     };
 
-
-    const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const LoginAccount = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const response = await axios.post(API_ENDPOINTS.LOGIN, formData);
-
-            const authToken = response.data.token;
-            const role = response.data.user.role;
-            const name = response.data.user.firstName;
-            const userid = response.data.user.id;
-            const department = response.data.user.department;
-            window.localStorage.setItem("token", authToken);
-            window.localStorage.setItem("role", role);
-            window.localStorage.setItem("name", name);
-            window.localStorage.setItem("userid", userid);
-            window.localStorage.setItem("department", department);
-            router.push('/dashboard')
-            setFormData({
-                username: "",
-                password: "",
-            });
-        } catch (error) {
-            const axiosError = error as AxiosError;
-            if (axiosError.response?.status === 409) {
-                setFormErrors({
-                    ...formErrors,
-                    username: "Username not found",
-                    password: ""
-                });
-            } else if (axiosError.response?.status === 400) {
-                setFormErrors({
-                    ...formErrors,
-                    username: "",
-                    password: "Wrong password"
-                });
-            }
-        } finally {
-            setLoading(false);
+        const user = users.find(u => u.username === userForm.username && u.password === userForm.password);
+        if (user) {
+            setCookie("token", JSON.stringify(user), 1);
+            window.location.href = "/Dashboard";
+        } else {
+            setMessage({ text: "Invalid username or password", type: "error" });
         }
     };
+
     return (
-        <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] h-full min-h-screen flex items-center lg:justify-end justify-center lg:px-60 ">
-            <div className={`h-[25rem] w-[28.125rem] bg-black rounded-2xl lg:p-6 p-4 -mt-[15%]`}>
-                <form onSubmit={handleLoginSubmit} method="post" className="bg-customYellow w-full h-full flex flex-col items-center gap-3 justify-between py-3 ">
-                    <div className="flex flex-col items-center">
-                        <h1 className="text-4xl font-extrabold">WELCOME!</h1>
-                        <p className="text-sm font-light">Please enter your Login and Password.</p>
+        <div className="p-5 relative">
+            <div className="sticky top-5 bg-white">
+                <img src="/logo.png" className="h-10 w-40 object-cover bg-customYellow " onClick={() => window.location.href = "/"} />
+            </div>
+            <p className="text-center text-4xl  font-poppins font-bold mt-10">Log In</p>
+            <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite w-fit mx-auto smartphone:w-9/12 tablet:w-[34.125rem]">
+                <h1 className="text-center text-xl font-bold">Enter your Credentials</h1>
+                <form onSubmit={LoginAccount} className="mt-2 flex flex-col gap-3">
+                    <div className="relative h-11 w-full ">
+                        <input placeholder="Email Address" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.username} onChange={handleInputChange} name="username" />
+                        <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Email Address <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="w-4/6 flex flex-col gap-4">
-                        <div>
-                            <label htmlFor="username" className="font-poppins text-sm font-bold">Username/Email Address<span className="text-red-800">*</span></label>
-                            <input
-                                type="text"
-                                name="username"
-                                id="username"
-                                value={formData.username}
-                                onChange={handleInputChange}
-                                placeholder=" Enter Username/Email Address"
-                                className="w-full h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
-                            />
-                            {formErrors.username && (
-                                <p className="text-red-800 text-xs font-poppins ">
-                                    {formErrors.username}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="font-poppins text-sm font-bold">Password<span className="text-red-800">*</span></label>
-                            <div className="relative box-border">
-                                <input
-                                    type={showLoginPassword ? "text" : "password"}
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    placeholder=" Enter Password"
-                                    className="pr-8 w-full rounded-2xl h-[2.313rem] text-[0.813rem] border-2 border-black px-2"
-                                />
-                                <span className="absolute inset-y-0 right-0 flex items-center pr-1">
-                                    <span className="cursor-pointer -ml-7 -mt-.5" onClick={handleClickShowPassword}>
-                                        {showLoginPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                                    </span>
-                                </span>
-                            </div>
-                            {formErrors.password && (
-                                <p className="text-red-800 text-xs font-poppins ">
-                                    {formErrors.password}
-                                </p>
-                            )}
-                            <span className="text-xs flex justify-end font-light mb-2 mt-.5">Forgot Password?</span>
-                        </div>
+
+                    <div className="relative h-11 w-full">
+                        <input
+                            placeholder="Password"
+                            type="password"
+                            className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100"
+                            value={userForm.password}
+                            onChange={handleInputChange}
+                            name="password" />
+                        <label
+                            className="after:content[''] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Password <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <button type="submit" disabled={loading} className={`bg-black text-customYellow w-[110px] h-[35px] ${loading ? 'text-sm' : 'text-xl'}  rounded font-bold mb-5 -mt-4`}> {loading ? "LOGGING IN..." : "LOGIN"}</button>
-                        <p className="font-light text-xs font-poppins -mt-5">Don&apos;t have an account? <Link href="/signup" replace className="font-bold cursor-pointer mt-5">SIGN UP</Link></p>
+
+                    <button type="submit" className="mt-4 bg-customYellow font-bold py-2 px-4 rounded">Login</button>
+                    <div className="flex justify-between">
+                        <span className="text-blue-500 text-xs font-semibold">Forgot Password?</span>
+                        <span className="text-end text-xs">Don't have an account? <Link href="/SignUp" replace className="font-semibold text-blue-500 underline decoration-2">SIGN UP</Link></span>
                     </div>
                 </form>
             </div>
+            {message && (
+                <div className={`fixed top-1 right-1 block pl-1 pr-5 text-base leading-5 text-white opacity-95 font-regular border-2 ${message.type === "success" ? "bg-green-500 border-green-900" : "bg-red-500 border-red-900"
+                    }`}>
+                    <span>{message.text}</span>
+                    <span className="absolute right-1" onClick={closeAlert}>✖</span>
+                </div>
+            )}
         </div>
-    );
+    )
 }
 
 export default Login;

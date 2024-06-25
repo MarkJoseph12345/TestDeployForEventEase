@@ -1,32 +1,35 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { withAuth } from '../protection.js';
-import dynamic from 'next/dynamic';
-import LoadingPage from '../comps/LoadingPage.tsx';
-
-const StudentDashboard = dynamic(() => import('./studentDashboard.tsx'), {
-    loading: () => <LoadingPage />,
-});
-const AdminDashboard = dynamic(() => import('./adminDashboard.tsx'), {
-    loading: () => <LoadingPage />,
-});
+import { useEffect, useState } from "react";
+import AdminDashboard from "./AdminDashboard";
+import StudentDashboard from "./StudentDashboard";
+import { getRoleFromCookie } from "@/utils/data";
+import Loading from "../Loader/Loading";
 
 const Dashboard = () => {
-    const [userRole, setUserRole] = useState('');
+  const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const role = window.localStorage.getItem('role');
-        if (role) {
-            setUserRole(role);
-        }
-    }, []);
-    return (
-        <div className="max-w-[2000px] relative mx-auto">
-            {userRole === 'STUDENT' && <StudentDashboard />}
-            {userRole === 'ADMIN' && <AdminDashboard />}
-        </div>
-    );
+  useEffect(() => {
+    const fetchRole = async () => {
+      const role = getRoleFromCookie();
+      setRole(role);
+      setLoading(false);
+    };
+
+    fetchRole();
+  }, []);
+
+  if (loading) {
+    return <Loading/>;
+  }
+
+  return (
+    <div>
+      {role === "ADMIN" && <AdminDashboard />}
+      {role === "STUDENT" && <StudentDashboard />}
+    </div>
+  );
 };
 
-export default withAuth(Dashboard);
+export default Dashboard;

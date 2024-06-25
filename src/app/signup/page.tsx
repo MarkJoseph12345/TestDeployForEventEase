@@ -1,305 +1,88 @@
-'use client'
-
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import Link from "next/link";
-import axios, { AxiosError } from "axios";
-import { useEffect, useState } from "react";
-import { API_ENDPOINTS } from "../api";
-import { useRouter } from "next/navigation";
-
-interface FormData {
-    username: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    department: string;
-    IdNumber: string;
-}
-
-interface FormErrors {
-    firstName?: string;
-    lastName?: string;
-    username?: string;
-    department?: string;
-    password?: string;
-    IdNumber?: string;
-}
+"use client"
+import { useAuthRedirect } from "@/hooks/authRedirect"
+import { User } from "@/utils/interfaces"
+import Link from "next/link"
+import { useState } from "react"
+import Loading from "../Loader/Loading"
 
 const SignUp = () => {
-    useEffect(() => {
-        const token = window.localStorage.getItem('token');
-        if (token) {
-            router.push('/dashboard');
-        }
-    }, []);
-
-    const router = useRouter();
-    const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
-    const [formData, setFormData] = useState<FormData>({
+    const [userForm, setUserForm] = useState<User>({
         username: "",
         password: "",
         firstName: "",
         lastName: "",
         department: "CEA",
-        IdNumber: ""
-    });
-    const [formErrors, setFormErrors] = useState<FormErrors>({});
-    const [loading, setLoading] = useState(false);
-
-    const handleClickShowPassword = () => {
-        setShowLoginPassword(!showLoginPassword);
-    };
-
-    // Function to validate email format
-    const isValidEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
-    // Function to validate password
-    const isValidPassword = (password: string): boolean => {
-        // Regular expression for at least one uppercase letter, one number, and a minimum length of 8, with optional special characters
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
-        return passwordRegex.test(password);
-    };
-
-    // Function to validate form data
-    const validateFormData = () => {
-        const errors: FormErrors = {};
-
-        // Validate first name
-        if (!formData.firstName.trim()) {
-            errors.firstName = "First name is required.";
-        }
-
-        // Validate last name
-        if (!formData.lastName.trim()) {
-            errors.lastName = "Last name is required.";
-        }
-
-        // Validate email
-        if (!isValidEmail(formData.username)) {
-            errors.username = "Please enter a valid email address.";
-        }
-
-        if (!formData.lastName.trim()) {
-            errors.lastName = "Last name is required.";
-        }
-
-        // Validate department
-        if (!formData.department) {
-            errors.department = "Department is required.";
-        }
-
-        // Validate password
-        if (!isValidPassword(formData.password)) {
-            errors.password = "Your password must be 8 characters with at least one uppercase letter and one number.";
-        }
-
-        setFormErrors(errors);
-        return Object.keys(errors).length === 0; // Return whether the form is valid
-    };
-
+        IdNumber: "",
+    })
+    const [confirmPass, setConfirmPass] = useState("");
+    const [message, setMessage] = useState<{ text: string, type: "success" | "error" } | undefined>();
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
         const { name, value } = e.target;
 
-        setFormData({
-            ...formData,
+        setUserForm({
+            ...userForm,
             [name]: value
         });
+    }
 
-        // Validate individual fields and update error state
-        const errors = { ...formErrors };
-
-        if (name === "firstName") {
-            if (!value.trim()) {
-                errors.firstName = "First name is required.";
-            } else {
-                delete errors.firstName;
-            }
-        }
-
-        if (name === "lastName") {
-            if (!value.trim()) {
-                errors.lastName = "Last name is required.";
-            } else {
-                delete errors.lastName;
-            }
-        }
-
-        if (name === "username") {
-            if (!isValidEmail(value)) {
-                errors.username = "Please enter a valid email address.";
-            } else {
-                delete errors.username;
-            }
-        }
-
-        if (name === "password") {
-            if (!isValidPassword(value)) {
-                errors.password = "Your password must be 8 characters with at least one uppercase letter and one number.";
-            } else {
-                delete errors.password;
-            }
-        }
-
-        if (name === "department") {
-            if (!value) {
-                errors.department = "Department is required.";
-            } else {
-                delete errors.department;
-            }
-        }
-
-        setFormErrors(errors);
+    const closeAlert = () => {
+        setMessage(undefined);
     };
 
-
-    const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-        const { value } = e.target;
-        setFormData({
-            ...formData,
-            department: value
-        });
-    };
-
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    const SignUpAccount = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        setLoading(true);
 
-
-        const isFormValid = validateFormData();
-        if (!isFormValid) {
-            setLoading(false);
+        if (!userForm.firstName || !userForm.lastName || !userForm.username || !userForm.password) {
+            setMessage({ text: "Please fill out all required fields", type: "error" });
+            setTimeout(() => setMessage(undefined), 3000);
             return;
         }
 
-        try {
-
-            const response = await axios.post(API_ENDPOINTS.REGISTER, formData);
-            await axios.post(API_ENDPOINTS.LOGIN, {
-                username: formData.username,
-                password: formData.password
-            });
-            const authToken = response.data.token;
-            const role = response.data.user.role;
-            const name = response.data.user.firstName;
-            const userid = response.data.user.id;
-            const department = response.data.user.department;
-            window.localStorage.setItem("token", authToken);
-            window.localStorage.setItem("role", role);
-            window.localStorage.setItem("name", name);
-            window.localStorage.setItem("userid", userid);
-            window.localStorage.setItem("department", department);
-            const defaultImage = 'defaultpic.png';
-            fetch(defaultImage)
-                .then(response => response.blob())
-                .then(blob => {
-                    const defaultFormData = new FormData();
-                    defaultFormData.append('image', blob, 'defaultpic.png');
-                    axios.put(`${API_ENDPOINTS.UPDATE_PROFILE_PICTURE}${userid}`, defaultFormData)
-                });
-            router.push('/dashboard')
-            setFormData({
-                username: "",
-                password: "",
-                firstName: "",
-                lastName: "",
-                department: "CEA",
-                IdNumber: ""
-            });
-            setFormErrors({});
-        } finally {
-            setLoading(false);
+        if (userForm.password !== confirmPass) {
+            setMessage({ text: "Passwords do not match", type: "error" });
+            setTimeout(() => setMessage(undefined), 3000);
+            return;
         }
+
+        setMessage({ text: "Sign up successful!", type: "success" });
+        setTimeout(() => setMessage(undefined), 5000);
     };
+    
     return (
-        <div className="bg-cover bg-no-repeat bg-center bg-[url('/BG.png')] min-h-screen flex items-center lg:justify-start justify-center lg:px-60">
-            <div className={`h-fit w-[31.25rem] bg-black rounded-2xl lg:p-6 p-4 `} >
-                <form onSubmit={handleSubmit} method="post" className="bg-customYellow h-full w-full flex flex-col items-center justify-between py-3 gap-5 shadow-inner">
-                    <div className="flex flex-col items-center">
-                        <h1 className="text-3xl font-extrabold">CREATE AN ACCOUNT</h1>
-                        <p className="font-poppins font-light">Create an account to explore exciting events.</p>
+        <div className="p-5 relative">
+            <img src="/logo.png" className="h-10 w-40 object-cover bg-customYellow" onClick={() => window.location.href = "/"} />
+            <p className="text-center text-4xl  font-poppins font-bold mt-10">Sign Up</p>
+            <p className="text-center text-sm mt-2 text-gray-500">By signing up, you agree to our <a href="/PrivacyPolicy" className=" underline decoration-2 text-blue-500 font-bold">Privacy Policy</a>.</p>
+            <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite w-fit mx-auto smartphone:w-9/12 tablet:w-[34.125rem]">
+                <h1 className="text-center text-xl font-bold">Enter your account details</h1>
+                <form onSubmit={SignUpAccount} className="mt-2 flex flex-col gap-3">
+                    <div className="relative h-11 w-full ">
+                        <input placeholder="First Name" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-customYellow focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.firstName} onChange={handleInputChange} name="firstName" />
+                        <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            First Name <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="flex justify-between w-5/6">
-                        <div className="flex-grow w-full">
-                            <label htmlFor="firstName" className="font-poppins text-sm font-bold ">First Name<span className="text-red-800">*</span></label>
-                            <input
-                                id="firstName"
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                placeholder="Enter First Name"
-                                className="w-40 h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
-                            />
-                            {formErrors.firstName && (
-                                <p className="text-red-800 text-xs font-poppins ">
-                                    {formErrors.firstName}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label htmlFor="lastName" className="font-poppins text-sm font-bold ">Last Name<span className="text-red-800">*</span></label>
-                            <input
-                                id="lastName"
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                placeholder="Enter Last Name"
-                                className="w-40 h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
-                            />
-                            {formErrors.lastName && (
-                                <p className="text-red-800 text-xs font-poppins">
-                                    {formErrors.lastName}
-                                </p>
-                            )}
-                        </div>
+                    <div className="relative h-11 w-full ">
+                        <input placeholder="Last Name" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.lastName} onChange={handleInputChange} name="lastName" />
+                        <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Last Name <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="w-5/6">
-                        <label htmlFor="username" className="font-poppins text-sm font-bold">Username/Email Address<span className="text-red-800">*</span></label>
-                        <input
-                            type="text"
-                            name="username"
-                            id="username"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            placeholder="Enter Username/Email Address"
-                            className="w-full h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
-                        />
-                        {formErrors.username && (
-                            <p className="text-red-800 text-xs font-poppins ">
-                                {formErrors.username}
-                            </p>
-                        )}
+                    <div className="relative h-11 w-full ">
+                        <input placeholder="Email Address" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.username} onChange={handleInputChange} name="username" />
+                        <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Email Address <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="w-5/6">
-                        <label htmlFor="IdNumber" className="font-poppins text-sm font-bold">ID Number</label>
-                        <input
-                            type="text"
-                            name="IdNumber"
-                            id="IdNumber"
-                            value={formData.IdNumber}
-                            onChange={handleInputChange}
-                            placeholder="Enter ID Number"
-                            className="w-full h-[2.313rem] text-[0.813rem] rounded-2xl border-2 border-black px-2"
-                        />
-                        {formErrors.IdNumber && (
-                            <p className="text-red-800 text-xs font-poppins ">
-                                {formErrors.IdNumber}
-                            </p>
-                        )}
+                    <div className="relative h-11 w-full ">
+                        <input placeholder="ID Number" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.IdNumber} onChange={handleInputChange} name="IdNumber" />
+                        <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            ID Number
+                        </label>
                     </div>
-                    <div className="w-5/6">
-                        <label htmlFor="department" className="font-poppins text-sm font-bold">Department<span className="text-red-800">*</span></label>
+                    <div className="relative h-11 w-full mt-3">
                         <select
-                            value={formData.department}
-                            onChange={handleDepartmentChange}
-                            id="department"
-                            className="w-full h-[37px] rounded-2xl border-2 border-black px-2">
+                            className="peer h-full w-full rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 empty:!bg-gray-900 focus:border-2 focus:border-customYellow focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50" value={userForm.department} onChange={(e) => { handleInputChange(e); e.target.blur(); }} name="department">
                             <option value="CEA">CEA</option>
                             <option value="CMBA">CMBA</option>
                             <option value="CASE">CASE</option>
@@ -307,44 +90,50 @@ const SignUp = () => {
                             <option value="CCS">CCS</option>
                             <option value="CCJ">CCJ</option>
                         </select>
-                        {formErrors.department && (
-                            <p className="text-red-800 text-xs font-poppins">
-                                {formErrors.department}
-                            </p>
-                        )}
+                        <label
+                            className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-blue-gray-200 after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:border-customYellow peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Department
+                        </label>
                     </div>
-                    <div className="w-5/6 mb-2">
-                        <label htmlFor="password" className="font-poppins text-sm font-bold">Password<span className="text-red-800">*</span></label>
-                        <div className="relative box-border">
-                            <input
-                                type={showLoginPassword ? "text" : "password"}
-                                name="password"
-                                id="password"
-                                value={formData.password}
-                                onChange={handleInputChange}
-                                placeholder="Enter Password"
-                                style={{ fontSize: '13px' }}
-                                className="pr-8 w-full rounded-2xl h-[37px] border-2 border-black px-2" />
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-1">
-                                <span className="cursor-pointer -ml-7 -mt-.5" onClick={handleClickShowPassword}>
-                                    {showLoginPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                                </span>
-                            </span>
-                        </div>
-                        {formErrors.password && (
-                            <p className="text-red-800 text-xs font-poppins">
-                                {formErrors.password}
-                            </p>
-                        )}
+                    <div className="relative h-11 w-full">
+                        <input
+                            placeholder="Password"
+                            type="password"
+                            className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100"
+                            value={userForm.password}
+                            onChange={handleInputChange}
+                            name="password" />
+                        <label
+                            className="after:content[''] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Password <span className="text-customRed">*</span>
+                        </label>
                     </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <button type="submit" disabled={loading} className={`bg-black text-customYellow w-[110px] h-[35px] ${loading ? 'text-sm' : 'text-xl'}  rounded-xl font-bold `}> {loading ? "SIGNING UP..." : "SIGN UP"}</button>
-                        <p className="font-light text-xs font-poppins">Already have an account? <Link href="/login" replace className="font-bold cursor-pointer">LOGIN</Link></p>
+                    <div className="relative h-11 w-full">
+                        <input
+                            placeholder="Password"
+                            type="password"
+                            className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100"
+                            value={confirmPass}
+                            onChange={(e) => setConfirmPass(e.target.value)}
+                            name="confirmPass" />
+                        <label
+                            className="after:content[''] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
+                            Confirm Password <span className="text-customRed">*</span>
+                        </label>
                     </div>
+                   <button type="submit" className="mt-4 bg-customYellow font-bold py-2 px-4 rounded">Sign Up</button> <p className="text-end text-xs">Already have an account? <Link href="/Login" replace className="font-semibold text-blue-500 underline decoration-2">LOGIN</Link></p>
+                    
                 </form>
             </div>
+            {message && (
+                <div className={`fixed top-1 right-1 block pl-1 pr-5 text-base leading-5 text-white opacity-95 font-regular border-2 ${message.type === "success" ? "bg-green-500 border-green-900" : "bg-red-500 border-red-900"
+                    }`}>
+                      <span>{message.text}</span> 
+                      <span className="absolute right-1" onClick={closeAlert}>✖</span>
+                </div>
+            )}
         </div>
-    );
-};
+    )
+}
 
 export default SignUp;

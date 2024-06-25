@@ -21,12 +21,11 @@ const config: Config = {
         customWhite: "#F6F6F6",
       },
       screens: {
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
-        'xl': '1280px',
-        '2xl': '1536px',
-        '3xl': '1920px',
+        'smartphone': '640px',
+        'tablet': '768px',
+        'laptop': '1024px',
+        'desktop': '1440px',
+        'widescreen': '1920px',
       },
       fontFamily: {
         'poppins': ['Poppins', 'sans-serif'],
