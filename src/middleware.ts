@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   const adminRoutes = ["/CreateEvent", "/ManageEvents", "/ManageUsers", "/ReportsAndAnalysis"]
   const studentRoutes = ["/AttendedEvents", "/JoinEvents", "/QRCode", "/RegisteredEvents"]
 
-  if (!token && pathname.toLowerCase() === "/signup") {
+  if (!token && pathname.toLowerCase() === "/signup" && pathname !== "/SignUp") {
     return NextResponse.redirect(new URL("/SignUp", request.url));
   }
 
