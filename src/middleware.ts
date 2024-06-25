@@ -12,6 +12,13 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
   const { pathname } = request.nextUrl;
   
+  const expectedPathname = '/' + properCasing(pathname);
+
+  if (pathname.toLowerCase() !== expectedPathname.toLowerCase()) {
+    const url = request.nextUrl.clone();
+    url.pathname = expectedPathname;
+    return NextResponse.redirect(url);
+  }
 
   const adminRoutes = ["/CreateEvent", "/ManageEvents", "/ManageUsers", "/ReportsAndAnalysis"]
   const studentRoutes = ["/AttendedEvents", "/JoinEvents", "/QRCode", "/RegisteredEvents"]
