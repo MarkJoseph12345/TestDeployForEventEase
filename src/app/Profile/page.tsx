@@ -1,6 +1,7 @@
 "use client"
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Sidebar from '../Comps/Sidebar';
+import Loading from '../Loader/Loading';
 
 const ProfilePopup = ({ picture, onClose }: any) => {
 
@@ -59,6 +60,25 @@ const Profile = () => {
     const handleClosePopup = () => {
         setClickedProfilePic("");
     };
+
+    const handleSubmit = (event: { preventDefault: () => void; }) => {
+        event.preventDefault();
+        window.location.reload();
+    };
+
+    
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
+    
     return (
         <div className="bg-gray-200 h-screen text-center pb-4 smartphone:h-fit tablet:h-screen">
             <Sidebar />
@@ -70,7 +90,7 @@ const Profile = () => {
             {clickedProfilePic && <ProfilePopup picture={clickedProfilePic} onClose={handleClosePopup} />}
             <div className="h-fit rounded-2xl mt-4 border-2 p-2 bg-customWhite mx-auto w-fit smartphone:w-9/12 laptop:w-[48rem]">
                 <h1 className="text-center text-xl font-bold">Change your account details</h1>
-                <form className="mt-2 flex flex-col gap-3">
+                <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-3">
                     <div className="relative h-11 w-full ">
                         <input placeholder="Email Address" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100"
                             //value={userForm.username} onChange={handleInputChange} 
