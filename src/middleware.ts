@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
   const studentRoutes = ["/AttendedEvents", "/JoinEvents", "/QRCode", "/RegisteredEvents"]
 
   if (!token && pathname.toLowerCase() === "/signup") {
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/SignUp", request.url));
   }
 
   if (!token && pathname.toLowerCase() !== "/login") {
@@ -21,6 +21,10 @@ export function middleware(request: NextRequest) {
   }
 
   if (token && (pathname.toLowerCase() === "/login" || pathname.toLowerCase() === "/signup")) {
+    return NextResponse.redirect(new URL("/Dashboard", request.url));
+  }
+
+  if (token && pathname.toLowerCase() === "/dashboard") {
     return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
 
