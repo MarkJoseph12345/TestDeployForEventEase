@@ -11,37 +11,29 @@ const properCasing = (path: string) => {
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
   const { pathname } = request.nextUrl;
-  
-  const expectedPathname = '/' + properCasing(pathname);
-
-  if (pathname !== expectedPathname) {
-    const url = request.nextUrl.clone();
-    url.pathname = expectedPathname;
-    return NextResponse.redirect(url);
-  }
 
   const adminRoutes = ["/CreateEvent", "/ManageEvents", "/ManageUsers", "/ReportsAndAnalysis"]
   const studentRoutes = ["/AttendedEvents", "/JoinEvents", "/QRCode", "/RegisteredEvents"]
 
-  if (!token && pathname === "/SignUp") {
-    return NextResponse.next()
+  if (!token && pathname.toLowerCase() === "/signup") {
+    return NextResponse.next();
   }
 
-  if (!token && pathname !== "/Login") {
-    return NextResponse.redirect(new URL("/Login", request.url))
+  if (!token && pathname.toLowerCase() !== "/login") {
+    return NextResponse.redirect(new URL("/Login", request.url));
   }
 
-  if (token && (pathname === "/Login" || pathname === "/SignUp")) {
-    return NextResponse.redirect(new URL("/Dashboard", request.url))
+  if (token && (pathname.toLowerCase() === "/login" || pathname.toLowerCase() === "/signup")) {
+    return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
 
   if (token) {
     const user = JSON.parse(token.value);
-    if (adminRoutes.includes(pathname) && user.role !== "ADMIN") {
+    if (adminRoutes.map(route => route.toLowerCase()).includes(pathname.toLowerCase()) && user.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/Dashboard", request.url));
     }
 
-    if (studentRoutes.includes(pathname) && user.role !== "STUDENT") {
+    if (studentRoutes.map(route => route.toLowerCase()).includes(pathname.toLowerCase()) && user.role !== "STUDENT") {
       return NextResponse.redirect(new URL("/Dashboard", request.url));
     }
   }
