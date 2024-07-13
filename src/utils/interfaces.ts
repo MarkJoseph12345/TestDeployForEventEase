@@ -4,21 +4,25 @@ export interface User {
     password?: string;
     firstName?: string;
     lastName?: string;
-    IdNumber?: string;
+    idNumber?: string;
     department?: string;
-    profilePicture?: string;
+    profilePicture?: Blob;
     role?: string;
 }
 
 export interface Event {
     id?: number;
     eventName: string;
-    eventPicture: string;
+    eventDescription: string;
     eventStarts: Date | null;
     eventEnds: Date | null;
-    eventDescription: string;
-    type: string[];
-    department: string[];
+    likes?: number;
+    dislikes?: number;
+    usersLiked?: Set<string>;
+    usersDisliked?: Set<string>;
+    eventPicture?: string;
+    department: string[]; 
+    eventType: string[];
 }
 
 export interface EventDetailModal {

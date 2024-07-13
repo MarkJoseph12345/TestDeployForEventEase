@@ -1,17 +1,17 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
 import { User } from '@/utils/interfaces';
-import { users } from "@/utils/testdata";
 import Sidebar from '../Comps/Sidebar';
 import Loading from '../Loader/Loading';
+import { deleteUser, fetchProfilePicture, getAllUsers } from '@/utils/apiCalls';
 
 const ManageUsers = () => {
-    const [userList, setUserList] = useState<User[]>(users);
+    const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-    const [showDepartments, setShowDepartments] = useState<boolean>(false);
-
+    const [showDepartments, setShowDepartments] = useState<boolean>(false);    
+    const [userImages, setUserImages] = useState<{ [key: string]: string }>({});
     const departments = Array.from(new Set(users.map(user => user.department)));
 
     const filteredUsers = users.filter(user =>
@@ -57,10 +57,51 @@ const ManageUsers = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 0);
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await getAllUsers();
+                const filteredUsers = fetchedUsers.filter(user => user.role !== 'ADMIN');
+                setUsers(filteredUsers);
+                fetchUserImages(filteredUsers);
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
     }, []);
+    
+    const fetchUserImages = async (users: User[]) => {
+        const imagePromises = users.map(async (user) => {
+            if (user.id) {
+                const url = await fetchProfilePicture(user.id);
+                return { [user.id]: url };
+            }
+            return {};
+        });
+
+        const images = await Promise.all(imagePromises);
+        const imagesMap = images.reduce((acc, image) => ({ ...acc, ...image }), {});
+        setUserImages(imagesMap);
+    };
+
+    const handleDeleteUser = async () => {
+        if (selectedUser && selectedUser.id) {
+            try {
+                const isDeleted = await deleteUser(selectedUser.id);
+                if (isDeleted) {
+                    setUsers(users.filter(user => user.id !== selectedUser.id));
+                    handleClosePopup();
+                } else {
+                    console.error("Failed to delete user");
+                }
+            } catch (error) {
+                console.error("Failed to delete user:", error);
+            }
+        }
+    };
 
     if (loading) {
         return <Loading />;
@@ -105,7 +146,7 @@ const ManageUsers = () => {
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
                             <div key={user.id} className="flex items-center border border-gray-200 rounded-md p-4 mt-2" onClick={() => handleUserClick(user)}>
-                                <img src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} className="w-16 h-16 object-cover rounded-md mr-4" />
+                                <img  src={userImages[user.id!] || "/defaultpic.png"} alt={`${user.firstName} ${user.lastName}`} className="w-16 h-16 object-cover rounded-full mr-4" />
                                 <div>
                                     <p className="font-semibold">{`${user.firstName} ${user.lastName}`}</p>
                                     <p className="text-gray-600">{user.department}</p>
@@ -124,11 +165,16 @@ const ManageUsers = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white px-4 rounded-md shadow-md">
                         <p className="sticky top-0 text-end text-customYellow font-bold text-2xl z-10 cursor-pointer" onClick={handleClosePopup}>✖</p>
-                        <div className="mt-2 flex flex-col items-center">
-                            <img src={selectedUser.profilePicture} alt={`${selectedUser.firstName} ${selectedUser.lastName}`} className="w-32 h-32 object-cover rounded-md mt-2" />
+                        <div className="my-2 flex flex-col items-center">
+                            <img src={userImages[selectedUser.id!] || "/defaultpic.png"} alt={`${selectedUser.firstName} ${selectedUser.lastName}`} className="w-64 h-64 object-cover rounded-md mt-2" />
                             <p><strong>Name:</strong> {`${selectedUser.firstName} ${selectedUser.lastName}`}</p>
                             <p><strong>Email:</strong> {selectedUser.username}</p>
                             <p><strong>Department:</strong> {selectedUser.department}</p>
+                            <button
+                                onClick={handleDeleteUser}
+                                className="mt-4 px-4 py-2 bg-customRed text-white rounded-md">
+                                Delete User
+                            </button>
                         </div>
                     </div>
                 </div>

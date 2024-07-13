@@ -3,17 +3,23 @@ import { SetStateAction, useRef, useState } from 'react'
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { Event, EventDetailModal } from '@/utils/interfaces';
+import { deleteEvent, updateEvent, updateEventPicture } from '@/utils/apiCalls';
 
 const departments = ['CEA', 'CMBA', 'CASE', 'CNAHS', 'CCS', 'CCJ'];
 
 const ManageEvent = ({ event, onClose }: EventDetailModal) => {
-    const [newPicture, setNewPicture] = useState<string | null>(event.eventPicture);
-    const [updateEvent, setUpdateEvent] = useState<Event>({ ...event });
-
+    const [newPicture, setNewPicture] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string>(event.eventPicture || "");
+    const [updateEventData, setUpdateEventData] = useState<any>({
+        ...event,
+        eventType: event.eventType ? event.eventType.toString().split(', ') : [],
+        eventStarts: event.eventStarts ? new Date(event.eventStarts) : null,
+        eventEnds: event.eventEnds ? new Date(event.eventEnds) : null,
+    });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const handleCheckboxChange = (department: string) => {
-        setUpdateEvent(prevEvent => {
+        setUpdateEventData((prevEvent: { department: string[]; }) => {
             const updatedDepartments = prevEvent.department.includes(department)
                 ? prevEvent.department.filter(dep => dep !== department)
                 : [...prevEvent.department, department];
@@ -27,23 +33,27 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        if (name === 'type') {
-            setUpdateEvent(prevEvent => ({
-                ...prevEvent,
-                [name]: [value, prevEvent.type[1]],
-            }));
-        } else if (name === 'classification') {
-            setUpdateEvent(prevEvent => ({
-                ...prevEvent,
-                type: [prevEvent.type[0], value],
-            }));
-        } else {
-            setUpdateEvent(prevEvent => ({
-                ...prevEvent,
-                [name]: value,
-            }));
-        }
+
+        setUpdateEventData((prevEvent: { eventType: any[]; }) => {
+            if (name === 'eventType') {
+                return {
+                    ...prevEvent,
+                    eventType: [value, prevEvent.eventType[1]],
+                };
+            } else if (name === 'classification') {
+                return {
+                    ...prevEvent,
+                    eventType: [prevEvent.eventType[0], value],
+                };
+            } else {
+                return {
+                    ...prevEvent,
+                    [name]: value,
+                };
+            }
+        });
     };
+
 
     const filterStartPassedTime = (time: string | number | Date) => {
         const currentDate = new Date();
@@ -53,21 +63,19 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
     };
 
     const filterEndPassedTime = (time: string | number | Date) => {
-        const currentDate = event.eventStarts;
+        const currentDate = new Date(event.eventStarts!);
         const selectedDate = new Date(time);
-
-        return currentDate!.getTime() < selectedDate.getTime();
+    
+        return currentDate.getTime() < selectedDate.getTime();
     };
+    
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files && event.target.files[0];
+        const file = event.target.files?.[0];
         if (file) {
+            setNewPicture(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setNewPicture(reader.result as string);
-                // setUpdateEvent(prevEvent => ({
-                //     ...prevEvent,
-                //     eventPicture: reader.result as string, 
-                // }));
+            reader.onload = () => {
+                setPreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -75,7 +83,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
 
     const handleStartDateChange = (date: Date | null) => {
         if (date) {
-            setUpdateEvent(prevEvent => ({
+            setUpdateEventData((prevEvent: any) => ({
                 ...prevEvent,
                 eventStarts: date,
             }));
@@ -84,7 +92,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
 
     const handleEndDateChange = (date: Date | null) => {
         if (date) {
-            setUpdateEvent(prevEvent => ({
+            setUpdateEventData((prevEvent: any) => ({
                 ...prevEvent,
                 eventEnds: date,
             }));
@@ -92,20 +100,57 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
     };
 
 
-    const handleUpdateEvent = () => {
-        alert(JSON.stringify(updateEvent, null, 2));
+    const handleUpdateEvent = async () => {
+        if (event.id === undefined) {
+            alert("Event ID is not defined.");
+            return;
+        }
+    
+        const updatedEventData = {
+            ...updateEventData,
+            eventPicture: newPicture || event.eventPicture, 
+        };
+        const result = await updateEvent(event.id, updatedEventData);
+
+        if(newPicture instanceof File) {
+            await updateEventPicture(event.id, newPicture);
+        }
+
+        if (result) {
+            window.location.reload();
+        } else {
+            console.log("Failed to update event.");
+        }
     };
+    
+
+    const handleDeleteEvent = async () => {
+        if (event.id === undefined) {
+            alert("Event ID is not defined.");
+            return;
+        }
+        const success = await deleteEvent(event.id);
+        if (success) {
+            alert("Event deleted successfully.");
+            window.location.reload();
+        } else {
+            alert("Failed to delete event.");
+        }
+    };
+    
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
             <div className="bg-white p-2 rounded-md shadow-md w-11/12 max-h-[95%] overflow-auto relative laptop:max-w-[50rem]">
-                <p className="sticky top-0 text-end text-gray-500 font-bold text-2xl z-10 cursor-pointer" onClick={onClose}>✖</p>
+                <div className="flex justify-end">
+                    <span className="sticky text-gray-500 font-bold text-2xl z-10 cursor-pointer" onClick={onClose}>✖</span>
+                </div>
                 <p className="text-2xl font-poppins font-bold text-center">Manage Event</p>
                 <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite  flex flex-col gap-5 ">
                     <div className="relative w-full flex flex-col items-center justify-center h-fit">
-                        {newPicture &&
+                        {preview &&
                             <div
                                 className="h-44 w-72">
-                                <img src={newPicture} className="h-full w-full object-contain" />
+                                <img src={preview || event.eventPicture} className="h-full w-full object-contain" />
                             </div>
                         }
                         <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
@@ -113,7 +158,9 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                     </div>
                     <div className="relative w-full max-w-[24rem] mx-auto tablet:max-w-[90%]">
                         <input placeholder="Event Name"
-                            defaultValue={updateEvent.eventName}
+                            name="eventName"
+                            defaultValue={updateEventData.eventName}
+                            onChange={handleInputChange}
                             className="peer h-full w-full rounded-[7px] border border-black border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-black placeholder-shown:border-t-black focus:border-2 focus:border-black focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" />
                         <label
                             className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-black before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-black after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:!border-gray-900 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:!border-gray-900 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
@@ -122,7 +169,9 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                     </div>
                     <div className="relative w-full max-w-[24rem] mx-auto tablet:max-w-[90%]">
                         <input placeholder="Event Type"
-                            defaultValue={updateEvent.type[0]}
+                            name="eventType"
+                            defaultValue={event.eventType.toString().split(', ')[0]}
+                            onChange={handleInputChange}
                             className="peer h-full w-full rounded-[7px] border border-black border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-black placeholder-shown:border-t-black focus:border-2 focus:border-black focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" />
                         <label
                             className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-black before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-black after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:!border-gray-900 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:!border-gray-900 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
@@ -131,7 +180,9 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                     </div>
                     <div className="relative w-full max-w-[24rem] mx-auto tablet:max-w-[90%]">
                         <textarea placeholder="Event Description"
-                            defaultValue={updateEvent.eventDescription}
+                            name="eventDescription"
+                            defaultValue={updateEventData.eventDescription}
+                            onChange={handleInputChange}
                             className="peer h-32 w-full rounded-[7px] border border-black border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-black placeholder-shown:border-t-black focus:border-2 focus:border-black focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" />
                         <label
                             className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-black before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-black after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:!border-gray-900 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:!border-gray-900 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
@@ -151,7 +202,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                                                     htmlFor={`horizontal-list-${department}`}>
                                                     <input id={`horizontal-list-${department}`} type="checkbox"
                                                         className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-gray-900 checked:bg-gray-900 checked:before:bg-gray-900 hover:before:opacity-0"
-                                                        checked={updateEvent.department.includes(department)}
+                                                        checked={updateEventData.department.includes(department)}
                                                         onChange={() => handleCheckboxChange(department)}
                                                     />
                                                     <span
@@ -188,7 +239,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                                                 <input name="classification"
                                                     value="One-Time"
                                                     onChange={handleInputChange}
-                                                    checked={updateEvent.type[1] === "One-Time"}
+                                                    checked={updateEventData.eventType.toString().split(', ')[1] === "One-Time" || updateEventData.eventType[1] === "One-Time"}
                                                     id="horizontal-list-react" type="radio"
                                                     className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-gray-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-gray-900 checked:before:bg-gray-900 hover:before:opacity-0" />
                                                 <span
@@ -214,7 +265,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                                                 <input name="classification"
                                                     value="Series"
                                                     onChange={handleInputChange}
-                                                    checked={updateEvent.type[1] === "Series"} id="horizontal-list-vue" type="radio"
+                                                    checked={updateEventData.eventType.toString().split(', ')[1] === "Series" || updateEventData.eventType[1] === "Series"} id="horizontal-list-vue" type="radio"
                                                     className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-gray-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-gray-900 checked:before:bg-gray-900 hover:before:opacity-0" />
                                                 <span
                                                     className="absolute text-gray-900 transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
@@ -237,7 +288,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                             <p>Start Date</p>
                             <DatePicker
                                 showIcon
-                                selected={updateEvent.eventStarts}
+                                selected={updateEventData.eventStarts}
                                 onChange={(date) => handleStartDateChange(date)}
                                 showTimeSelect
                                 timeFormat="h:mm aa"
@@ -253,16 +304,16 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                         <div>
                             <p>End Date</p>
                             <DatePicker
-                                disabled={updateEvent.eventStarts === null}
+                                disabled={updateEventData.eventStarts === null}
                                 showIcon
-                                selected={updateEvent.eventEnds}
+                                selected={updateEventData.eventEnds}
                                 onChange={(date) => handleEndDateChange(date)}
                                 showTimeSelect
                                 timeFormat="h:mm aa"
                                 timeIntervals={30}
                                 timeCaption="Time"
                                 dateFormat="MMMM d, yyyy h:mm aa"
-                                minDate={updateEvent.eventStarts}
+                                minDate={updateEventData.eventStarts}
                                 filterTime={filterEndPassedTime}
                                 placeholderText="End Date"
                                 className="bg-white border border-gray-300 rounded-md px-3 py-2.5 focus:outline-none focus:border-blue-500"
@@ -270,7 +321,7 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
                         </div>
                     </div>
                     <div className="flex items-center justify-center gap-2 self-end">
-                        <button className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4" >Delete Event</button>
+                        <button className="bg-customRed text-white font-poppins font-bold px-4 py-2 rounded-md mt-4" onClick={handleDeleteEvent}>Delete Event</button>
                         <button className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4" onClick={handleUpdateEvent}>Update Event</button>
                     </div>
                 </div>

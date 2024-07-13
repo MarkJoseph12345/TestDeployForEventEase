@@ -5,20 +5,25 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Event } from '@/utils/interfaces';
 import Sidebar from '../Comps/Sidebar';
 import Loading from '../Loader/Loading';
+import { createEvent, updateEventPicture } from '@/utils/apiCalls';
 
 const departments = ['CEA', 'CMBA', 'CASE', 'CNAHS', 'CCS', 'CCJ'];
 
 const CreateEvent = () => {
-    const [newPicture, setNewPicture] = useState<string | null>(null);
+    const [newPicture, setNewPicture] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string>("");
     const [event, setEvent] = useState<Event>({
         eventName: '',
         eventPicture: '',
         eventDescription: '',
         eventStarts: null,
         eventEnds: null,
-        type: [],
+        eventType: [],
         department: [],
     });
+    const [isCreating, setIsCreating] = useState(false);
+    const [message, setMessage] = useState<{ text: string, type: "success" | "error" } | undefined>()
+
 
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,15 +43,15 @@ const CreateEvent = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        if (name === 'type') {
+        if (name === 'eventType') {
             setEvent(prevEvent => ({
                 ...prevEvent,
-                [name]: [value, prevEvent.type[1]],
+                [name]: [value, prevEvent.eventType[1]],
             }));
         } else if (name === 'classification') {
             setEvent(prevEvent => ({
                 ...prevEvent,
-                type: [prevEvent.type[0], value],
+                eventType: [prevEvent.eventType[0], value],
             }));
         } else {
             setEvent(prevEvent => ({
@@ -87,26 +92,54 @@ const CreateEvent = () => {
 
         return currentDate!.getTime() < selectedDate.getTime();
     };
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files && event.target.files[0];
+        const file = event.target.files?.[0];
         if (file) {
+            setNewPicture(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setNewPicture(reader.result as string);
-                // setEvent(prevEvent => ({
-                //     ...prevEvent,
-                //     eventPicture: reader.result as string, 
-                // }));
+            reader.onload = () => {
+                setPreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleCreateEvent = () => {
-        alert(JSON.stringify(event, null, 2));
+    const closeAlert = () => {
+        setMessage(undefined);
     };
 
+
+    const handleCreateEvent = async () => {
+        setIsCreating(true);
+        const { eventName, eventDescription, eventStarts, eventEnds, eventType, department } = event;
+        // if (!eventName || !eventDescription || !eventStarts || !eventEnds || type.length === 0 || department.length === 0) {
+        //     setMessage({ text: "Please fill all fields.", type: "error" });
+        //     setIsCreating(false);
+        //     setTimeout(() => setMessage(undefined), 3000);
+        //     return;
+        // }
+
+        //alert(JSON.stringify(event, null, 2));
+
+        const result = await createEvent(event);
+        setIsCreating(false);
+
+        if (result.success) {
+            setMessage({ text: result.message, type: "success" });
+            setTimeout(() => setMessage(undefined), 3000);
+            if(newPicture instanceof File) {
+                await updateEventPicture(result.id, newPicture);
+            }
     
+            window.location.reload();
+        } else {
+            setMessage({ text: result.message, type: "error" });
+            setTimeout(() => setMessage(undefined), 3000);
+        }
+    };
+
+
 
     const [loading, setLoading] = useState(true);
 
@@ -119,7 +152,7 @@ const CreateEvent = () => {
     if (loading) {
         return <Loading />;
     }
-    
+
     return (
         <div>
             <Sidebar />
@@ -127,7 +160,7 @@ const CreateEvent = () => {
                 <p className="text-2xl font-poppins font-bold text-center">Create Event</p>
                 <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite w-fit mx-auto flex flex-col gap-5 ">
                     <div className="relative w-full flex flex-col items-center justify-center">
-                        {newPicture && <img src={newPicture} className="mx-auto max-w-72 max-h-72 object-scale-down" />}
+                        {newPicture && <img src={preview} className="mx-auto max-w-72 max-h-72 object-scale-down" />}
                         <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                         <button onClick={() => fileInputRef.current && fileInputRef.current.click()} className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4">{newPicture ? "Change Event Image" : "Upload Event Image"}</button>
                     </div>
@@ -140,7 +173,7 @@ const CreateEvent = () => {
                         </label>
                     </div>
                     <div className="relative w-full max-w-[24rem] mx-auto tablet:max-w-[90%]">
-                        <input placeholder="Event Type" name="type" onChange={handleInputChange}
+                        <input placeholder="Event Type" name="eventType" onChange={handleInputChange}
                             className="peer h-full w-full rounded-[7px] border border-black border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-black placeholder-shown:border-t-black focus:border-2 focus:border-black focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" />
                         <label
                             className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-black before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-black after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:!border-gray-900 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:!border-gray-900 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
@@ -286,12 +319,25 @@ const CreateEvent = () => {
                         </div>
                     </div>
                     <div className="flex flex-col items-center justify-center gap-2">
-                        <button className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4" onClick={handleCreateEvent}>Create Event</button>
+                        <button
+                            className={`bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4 ${isCreating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handleCreateEvent}
+                            disabled={isCreating}
+                        >
+                            {isCreating ? "Creating event..." : "Create Event"}
+                        </button>
                     </div>
-
                 </div>
             </div>
+            {message && (
+                <div className={`z-20 fixed top-1 right-1 block pl-1 pr-5 text-base leading-5 text-white opacity-95 font-regular border-2 ${message.type === "success" ? "bg-green-500 border-green-900" : "bg-red-500 border-red-900"
+                    }`}>
+                    <span>{message.text}</span>
+                    <span className="absolute right-1 cursor-pointer" onClick={closeAlert}>✖</span>
+                </div>
+            )}
         </div>
+
     )
 }
 

@@ -51,7 +51,7 @@ const NavBar = () => {
   }, []);
 
   return (
-    <div className="w-full sticky top-0 z-20">
+    <div className="w-full sticky top-0 z-20 ">
       {isSidebarOpen && (
         <div className="flex items-center justify-between flex-col bg-white min-h-dvh w-full smartphone:hidden">
           <p className="text-3xl font-bold fixed top-1 right-4" onClick={toggleSidebar}>✖</p>
@@ -64,7 +64,7 @@ const NavBar = () => {
           </div>
         </div>
       )}
-      <div className={`flex items-center justify-between bg-customYellow ${isSidebarOpen ? "hidden" : "block"}`}>
+      <div className={`flex items-center justify-between bg-customYellow ${isSidebarOpen ? "hidden" : "block"} tablet:h-[4rem]`}>
         <img src="/logo.png" alt="Logo" className="h-10 w-40 object-cover" onClick={() => handleLogoClick()} />
         <p className="mr-4 text-4xl font-bold smartphone:hidden" onClick={toggleSidebar}>≡</p>
         <div className="flex items-center gap-5 mr-5 hidden smartphone:flex tablet:text-xl tablet:gap-10">

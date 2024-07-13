@@ -25,14 +25,13 @@ ChartJS.register(
 
 const ViewFeedback = ({ event, onClose }: EventDetailModal) => {
     const doughnutData = {
-        labels: ['Likes', 'Dislikes', 'Neutral'],
+        labels: ['Likes', 'Dislikes', ],
         datasets: [
             {
-                data: [300, 50, 100],
+                data: [event.likes, event.dislikes],
                 backgroundColor: [
                     '#FDCC01',
                     '#000000',
-                    '#4b5563',
                 ],
             },
         ],

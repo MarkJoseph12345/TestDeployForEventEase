@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { users } from "@/utils/data"
-import { isLoggedIn } from "./services/authService";
+import { deleteCookie } from "./utils/cookies";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
+  const roleCookie = request.cookies.get('role');
+  const role = roleCookie ? roleCookie.value : null; 
   const { pathname } = request.nextUrl;
 
   const routes: { [key: string]: string } = {
@@ -42,14 +43,13 @@ export function middleware(request: NextRequest) {
   if (token && (lowercasePathname === "/login" || lowercasePathname === "/signup")) {
     return NextResponse.redirect(new URL("/Dashboard", request.url));
   }
-
+  
   if (token) {
-    const user = JSON.parse(token.value);
-    if (adminRoutes.map(route => route.toLowerCase()).includes(lowercasePathname) && user.role !== "ADMIN") {
+    if (adminRoutes.map(route => route.toLowerCase()).includes(lowercasePathname) && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/Dashboard", request.url));
     }
 
-    if (studentRoutes.map(route => route.toLowerCase()).includes(lowercasePathname) && user.role !== "STUDENT") {
+    if (studentRoutes.map(route => route.toLowerCase()).includes(lowercasePathname) && role !== "STUDENT") {
       return NextResponse.redirect(new URL("/Dashboard", request.url));
     }
   }

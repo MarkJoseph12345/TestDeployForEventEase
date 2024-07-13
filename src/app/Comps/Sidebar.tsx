@@ -2,8 +2,11 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Link from "next/link";
-import {role} from "@/utils/data"
+import { role, userid } from "@/utils/data"
 import { deleteCookie } from '@/utils/cookies';
+import { User } from '@/utils/interfaces';
+import { fetchProfilePicture, getUserById } from '@/utils/apiCalls';
+import Loading from '../Loader/Loading';
 
 const studentSideBarLinks = [
     { name: 'Join Events', imageUrl: "/join.png", href: "/JoinEvents" },
@@ -23,19 +26,36 @@ const Sidebar = () => {
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openProfile, setOpenProfile] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [imageUrl, setImageUrl] = useState("");
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userData = await getUserById(userid);
+            setUser(userData);
+        };
+
+        const fetchImage = async () => {
+            const url = await fetchProfilePicture(userid);
+            setImageUrl(url);
+        };
+
+        fetchUser();
+        fetchImage();
+    }, []);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
         setOpenProfile(false)
     };
-  
+
     const handleClick = (href: string) => {
         if (pathname === href) {
             window.scrollTo({ top: 0, behavior: "smooth" });
             toggleSidebar();
         }
     };
-    
+
     const handleLogoClick = () => {
         const pathname = window.location.pathname;
         if (pathname === "/Dashboard") {
@@ -67,13 +87,18 @@ const Sidebar = () => {
         } else {
             document.removeEventListener('click', handleOutsideClick);
         }
-    
+
         return () => {
             document.removeEventListener('click', handleOutsideClick);
         };
     }, [isSidebarOpen, openProfile]);
 
     const sideBarLinks = role === "ADMIN" ? adminSideBarLinks : studentSideBarLinks;
+
+    if ( !user) {
+        return <Loading/>;
+    }
+
 
     return (
         <div className="w-full sticky top-0 z-10">
@@ -96,27 +121,27 @@ const Sidebar = () => {
                         ))}
                     </div>
                     <div className="absolute bottom-0 mx-5 flex items-center gap-2" onClick={() => setOpenProfile(!openProfile)}>
-                        <img src='/defaultpic.png' className="cursor-pointer object-fill tablet:w-24"/>
+                        <img src={imageUrl || "/defaultpic.png"} className="rounded-full cursor-pointer object-fill tablet:h-20 tablet:w-20" />
                         <div className="font-semibold text-lg flex flex-col items-start tablet:text-2xl">
-                            <p>John</p>
-                            <p>Doe</p>
+                            <p>{user!.firstName}</p>
+                            <p>{user!.lastName}</p>
                         </div>
                     </div>
                     {openProfile && (
                         <div ref={profileRef} className="border border-black w-[90%] bg-white rounded-2xl absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col">
                             <div className="flex items-center gap-3">
                                 <div>
-                                    <img src="/defaultpic.png" className="rounded-full object-fill w-12 h-12 tablet:h-16 tablet:w-16" />
+                                    <img src={imageUrl || "/defaultpic.png"} className="rounded-full object-fill w-12 h-12 tablet:h-16 tablet:w-16" />
                                 </div>
                                 <div className="flex flex-col items-start tablet:text-xl">
-                                    <p>John Doe</p>
-                                    <p className='text-sm text-gray-500 tablet:text-base'>john.doe@cit.edu</p>
+                                    <p>{user!.firstName} {user!.lastName}</p>
+                                    <p className='text-sm text-gray-500 tablet:text-base'>{user!.username}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col tablet:text-xl" onClick={() => setOpenProfile(false)}>
                                 <Link href="Profile" className="text-start cursor-pointer hover:bg-black hover:text-customYellow indent-3 py-1" onClick={() => handleClick("/Profile")}>Profile</Link>
                                 <p className="text-start cursor-pointer hover:bg-black hover:text-customYellow indent-3 py-1">Delete Account</p>
-                                <p className="text-start cursor-pointer hover:bg-black hover:rounded-b-2xl hover:text-customYellow indent-3 py-1" onClick={() => {deleteCookie("token"); window.location.href = "/"}}>Sign Out</p>
+                                <p className="text-start cursor-pointer hover:bg-black hover:rounded-b-2xl hover:text-customYellow indent-3 py-1" onClick={() => { deleteCookie("token"); deleteCookie("role"); window.location.href = "/" }}>Sign Out</p>
                             </div>
                         </div>
                     )}

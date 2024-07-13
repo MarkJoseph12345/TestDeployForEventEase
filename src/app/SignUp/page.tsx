@@ -4,15 +4,18 @@ import { User } from "@/utils/interfaces"
 import Link from "next/link"
 import { useState } from "react"
 import Loading from "../Loader/Loading"
+import { API_ENDPOINTS } from "@/utils/api"
+import { loginAccount, registerAccount } from "@/utils/apiCalls"
 
 const SignUp = () => {
+    const [loading, setLoading] = useState(false)
     const [userForm, setUserForm] = useState<User>({
         username: "",
         password: "",
         firstName: "",
         lastName: "",
         department: "CEA",
-        IdNumber: "",
+        idNumber: "",
     })
     const [confirmPass, setConfirmPass] = useState("");
     const [message, setMessage] = useState<{ text: string, type: "success" | "error" } | undefined>();
@@ -29,25 +32,49 @@ const SignUp = () => {
         setMessage(undefined);
     };
 
-    const SignUpAccount = (e: React.FormEvent<HTMLFormElement>): void => {
-        e.preventDefault();
 
+    const handleSignUp = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        e.preventDefault();
+        setLoading(true)
         if (!userForm.firstName || !userForm.lastName || !userForm.username || !userForm.password) {
             setMessage({ text: "Please fill out all required fields", type: "error" });
             setTimeout(() => setMessage(undefined), 3000);
+            setLoading(false)
             return;
         }
 
         if (userForm.password !== confirmPass) {
             setMessage({ text: "Passwords do not match", type: "error" });
             setTimeout(() => setMessage(undefined), 3000);
+            setLoading(false)
             return;
         }
 
-        setMessage({ text: "Sign up successful!", type: "success" });
-        setTimeout(() => setMessage(undefined), 5000);
+        
+        const result = await registerAccount(userForm);
+        setLoading(false)
+
+        if (result.success) {
+            setMessage({ text: result.message, type: "success" });
+            setTimeout(async () => {
+                const loginResult = await loginAccount(String(userForm.username), String(userForm.password));
+                if (loginResult.success) {
+                    window.location.href = "/Dashboard";
+                } else {
+                    setMessage({ text: loginResult.message, type: "error" });
+                    setTimeout(() => setMessage(undefined), 3000);
+                }
+            }, 1000);
+        } 
+        if (result.success) {
+            setMessage({ text: result.message, type: "success" });
+            setTimeout(() => setMessage(undefined), 3000);
+        } else {
+            setMessage({ text: result.message, type: "error" });
+            setTimeout(() => setMessage(undefined), 3000);
+        }
     };
-    
+
     return (
         <div className="p-5 relative">
             <img src="/logo.png" className="h-10 w-40 object-cover bg-customYellow" onClick={() => window.location.href = "/"} />
@@ -55,7 +82,7 @@ const SignUp = () => {
             <p className="text-center text-sm mt-2 text-gray-500">By signing up, you agree to our <a href="/PrivacyPolicy" className=" underline decoration-2 text-blue-500 font-bold">Privacy Policy</a>.</p>
             <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite w-fit mx-auto smartphone:w-9/12 tablet:w-[34.125rem]">
                 <h1 className="text-center text-xl font-bold">Enter your account details</h1>
-                <form onSubmit={SignUpAccount} className="mt-2 flex flex-col gap-3">
+                <form onSubmit={handleSignUp} className="mt-2 flex flex-col gap-3">
                     <div className="relative h-11 w-full ">
                         <input placeholder="First Name" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-customYellow focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.firstName} onChange={handleInputChange} name="firstName" />
                         <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
@@ -75,7 +102,7 @@ const SignUp = () => {
                         </label>
                     </div>
                     <div className="relative h-11 w-full ">
-                        <input placeholder="ID Number" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.IdNumber} onChange={handleInputChange} name="IdNumber" />
+                        <input placeholder="ID Number" className="peer h-full w-full border-b border-black bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-black focus:border-gray-500 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50 placeholder:opacity-0 focus:placeholder:opacity-100" value={userForm.idNumber} onChange={handleInputChange} name="idNumber" />
                         <label className="after:content[''] pointer-events-none absolute left-0  -top-1.5 flex h-full w-full select-none !overflow-visible truncate text-[11px] font-normal leading-tight text-gray-500 transition-all after:absolute after:-bottom-1.5 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-customYellow after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-customYellow peer-focus:after:scale-x-100 peer-focus:after:border-customYellow peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500">
                             ID Number
                         </label>
@@ -121,15 +148,16 @@ const SignUp = () => {
                             Confirm Password <span className="text-customRed">*</span>
                         </label>
                     </div>
-                   <button type="submit" className="mt-4 bg-customYellow font-bold py-2 px-4 rounded">Sign Up</button> <p className="text-end text-xs">Already have an account? <Link href="/Login" replace className="font-semibold text-blue-500 underline decoration-2">LOGIN</Link></p>
-                    
+                    <button type="submit" className="mt-4 bg-customYellow font-bold py-2 px-4 rounded" disabled={loading}>{loading ? "Signing up..." : "Sign Up"}</button>
+                    <p className="text-end text-xs">Already have an account? <Link href="/Login" replace className="font-semibold text-blue-500 underline decoration-2">LOGIN</Link></p>
+
                 </form>
             </div>
             {message && (
                 <div className={`fixed top-1 right-1 block pl-1 pr-5 text-base leading-5 text-white opacity-95 font-regular border-2 ${message.type === "success" ? "bg-green-500 border-green-900" : "bg-red-500 border-red-900"
                     }`}>
-                      <span>{message.text}</span> 
-                      <span className="absolute right-1" onClick={closeAlert}>✖</span>
+                    <span>{message.text}</span>
+                    <span className="absolute right-1 cursor-pointer" onClick={closeAlert}>✖</span>
                 </div>
             )}
         </div>
