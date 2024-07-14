@@ -5,10 +5,42 @@ import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
 import StudentEventsFilteredList from "../Comps/StudentEvents";
 import Sidebar from "../Comps/Sidebar";
 import Loading from "../Loader/Loading";
+import { fetchEventPicture, getEventsJoinedByUser } from "../../utils/apiCalls";
+import { userid } from "@/utils/data";
 
 const RegisteredEvents = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [joinedEvents, setJoinedEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchJoinedEvents = async () => {
+            try {
+                const events = await getEventsJoinedByUser(userid);
+                const currentTime = new Date();
+                const filteredEvents = events.filter(event => new Date(event.eventEnds!).getTime() > currentTime.getTime());
+
+                const processedEvents = await Promise.all(
+                    filteredEvents.map(async (event) => {
+                        if (event.eventType && Array.isArray(event.eventType)) {
+                            const eventTypeString = event.eventType[0];
+                            event.eventType = eventTypeString.split(", ");
+                        }
+                        event.eventPicture = await fetchEventPicture(event.id!);
+                        return event;
+                    })
+                );
+                setJoinedEvents(processedEvents);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching joined events:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchJoinedEvents();
+    }, []);
 
     const handleEventClick = (event: Event) => {
         setSelectedEvent(event);
@@ -18,17 +50,14 @@ const RegisteredEvents = () => {
         setSelectedEvent(null);
     };
 
-     const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 0);
-    }, []);
-
     if (loading) {
         return <Loading />;
     }
+    
+    const removeUnjoinedEvent = (eventId: number) => {
+        setJoinedEvents(joinedEvents.filter(event => event.id !== eventId));
+        window.location.reload()
+    };
     
 
     return (
@@ -45,12 +74,12 @@ const RegisteredEvents = () => {
                         </div>
                         <input type="search" className="block w-full p-2 ps-10 border rounded-md" placeholder="Search events..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
-                    {/* <StudentEventsFilteredList events={events} searchTerm={searchTerm} onEventClick={handleEventClick} /> */}
+                    <StudentEventsFilteredList events={joinedEvents} searchTerm={searchTerm} onEventClick={handleEventClick} eventType="registered" />
                 </div>
             </div>
-            {selectedEvent && <StudentEventDetailModal event={selectedEvent} onClose={handleClosePopup} />}
+            {selectedEvent && <StudentEventDetailModal event={selectedEvent} onClose={handleClosePopup} onJoinUnjoin={removeUnjoinedEvent} />}
         </div>
-    )
+    );
 }
 
 export default RegisteredEvents;

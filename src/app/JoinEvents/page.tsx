@@ -5,11 +5,62 @@ import { Event } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
 import StudentEventsFilteredList from "../Comps/StudentEvents";
 import Loading from "../Loader/Loading";
+import { fetchEventPicture, getEvents, getEventsJoinedByUser } from "@/utils/apiCalls";
+import { userdepartment, userid } from "@/utils/data";
 
 
 const JoinEvents = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+
+    useEffect(() => {
+        const loadEvents = async () => {
+            try {
+                const allEvents = await getEvents();
+                const joinedEvents = await getEventsJoinedByUser(userid);
+    
+                const currentTime = new Date();
+    
+                const notJoinedEvents = allEvents.filter(event => 
+                    !joinedEvents.some(joinedEvent => joinedEvent.id === event.id)
+                );
+    
+                const upcomingEvents = notJoinedEvents.filter(event =>
+                    new Date(event.eventEnds!).getTime() > currentTime.getTime() &&
+                    event.department.includes(userdepartment!)
+                );
+    
+                const processedEvents = await Promise.all(
+                    upcomingEvents.map(async (event) => {
+                        if (event.eventType && Array.isArray(event.eventType)) {
+                            const eventTypeString = event.eventType[0];
+                            event.eventType = eventTypeString.split(", ");
+                        }
+                        event.eventPicture = await fetchEventPicture(event.id!);
+                        return event;
+                    })
+                );
+    
+                setEvents(processedEvents);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error loading events:", error);
+                setError(true);
+                setLoading(false);
+            }
+        };
+    
+        loadEvents();
+    }, []);
+    
+
+    const removeJoinedEvent = (eventId: number) => {
+        setEvents(events.filter(event => event.id !== eventId));
+        window.location.reload()
+    };
 
     const handleEventClick = (event: Event) => {
         setSelectedEvent(event);
@@ -19,23 +70,15 @@ const JoinEvents = () => {
         setSelectedEvent(null);
     };
 
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 0);
-    }, []);
-
     if (loading) {
         return <Loading />;
     }
-    
+
     return (
         <div>
             <StudentSidebar />
             <div className="mt-2 mx-2">
-                <p className="text-2xl mb-2 font-semibold tablet:text-3xl">CSS Events</p>
+                <p className="text-2xl mb-2 font-semibold tablet:text-3xl">{userdepartment} Events</p>
                 <div className="mb-5">
                     <div className="relative mb-5 z-0">
                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -45,10 +88,11 @@ const JoinEvents = () => {
                         </div>
                         <input type="search" className="block w-full p-2 ps-10 border rounded-md" placeholder="Search events..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
-                    {/* <StudentEventsFilteredList events={events} searchTerm={searchTerm} onEventClick={handleEventClick} /> */}
+                    <StudentEventsFilteredList events={events} searchTerm={searchTerm} onEventClick={handleEventClick} />
                 </div>
             </div>
-            {selectedEvent && <StudentEventDetailModal event={selectedEvent} onClose={handleClosePopup} />}
+            {selectedEvent && <StudentEventDetailModal event={selectedEvent} onClose={handleClosePopup} onJoinUnjoin={removeJoinedEvent} />}
+
         </div>
     )
 }

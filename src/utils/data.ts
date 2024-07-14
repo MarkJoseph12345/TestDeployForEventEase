@@ -28,10 +28,22 @@ export const getDepartmentFromCookie = (): string | null=> {
     return null;
 };
 
+export const getEmailFromCookie = (): string | null=> {
+    const token = getCookie("token");
+    if (token) {
+        const department: string = JSON.parse(token).username;
+        return department;
+    }
+    return null;
+};
+
+
+
 
 export const role = getRoleFromCookie();
 export const userid = getUserFromCookie();
 export const userdepartment = getDepartmentFromCookie();
+export const useremail = getEmailFromCookie();
 
 
 

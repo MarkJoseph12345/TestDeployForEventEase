@@ -5,6 +5,7 @@ import AdminEventDetailModal from "../Modals/AdminEventDetailModal";
 import Sidebar from "../Comps/Sidebar";
 import Loading from "../Loader/Loading";
 import { fetchEventPicture, getEvents } from "@/utils/apiCalls";
+import { formatDate } from "@/utils/data";
 
 const ManageEvents = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -180,7 +181,7 @@ const ManageEvents = () => {
                                         <img src={event.eventPicture} alt={event.eventName} className="w-16 h-16 object-cover rounded-md mr-4 tablet:mr-0 tablet:w-72 tablet:h-56 tablet:object-fill" />
                                         <div>
                                             <p className="font-semibold">{event.eventName}</p>
-                                            <p className="text-gray-600">{new Date(event.eventStarts!).toLocaleString()}</p>
+                                            <p className="text-gray-600">{formatDate(event.eventStarts)}</p>
                                         </div>
                                     </div>
                                 ))

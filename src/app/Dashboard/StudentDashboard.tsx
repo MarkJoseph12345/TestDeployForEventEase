@@ -1,18 +1,31 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Event } from "../../utils/interfaces";
+import { Event, User } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
 import Sidebar from "../Comps/Sidebar";
-import { fetchEventPicture, getEvents } from "@/utils/apiCalls";
-import { formatDate, userdepartment } from "@/utils/data";
+import { fetchEventPicture, getEvents, getUserById } from "@/utils/apiCalls";
+import { formatDate, userdepartment, userid } from "@/utils/data";
 
 
 const StudentDasboard = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState(false);
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const fetchedUser = await getUserById(userid);
+        setUser(fetchedUser);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [userid]);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -68,11 +81,15 @@ const StudentDasboard = () => {
     setSelectedEvent(null);
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div>
       <Sidebar />
       <div className="mt-2 mx-2 mb-4">
-        <p className="text-2xl font-semibold tablet:text-3xl">Hello, user</p>
+        <p className="text-2xl font-semibold tablet:text-3xl">Hello, {user.firstName}</p>
         <p className="tablet:text-xl">Discover exciting events for your department!</p>
         <div className="w-full border-t my-4" />
         <p className="text-2xl font-medium">Closest {userdepartment} Events</p>

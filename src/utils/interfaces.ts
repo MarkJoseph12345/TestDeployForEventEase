@@ -28,6 +28,7 @@ export interface Event {
 export interface EventDetailModal {
     event: Event;
     onClose: () => void;
+    onJoinUnjoin?: (eventId: number) => void;
 }
 
 
@@ -35,4 +36,6 @@ export interface FilteredEventListProps {
     events: Event[];
     searchTerm: string;
     onEventClick: (event: Event) => void;
+    eventType?: 'registered' | 'attended' | 'join';
+
 }

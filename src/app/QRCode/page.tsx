@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import QRComponent from "react-qr-code";
 import Sidebar from "../Comps/Sidebar";
 import Loading from "../Loader/Loading";
+import { useremail } from "@/utils/data";
 
 const QRCode = () => {
     const qrRef = useRef<HTMLDivElement>(null);
@@ -53,7 +54,7 @@ const QRCode = () => {
             <div className="rounded-lg shadow-lg m-4 pb-4 w-full max-w-md border">
                 <div className="bg-yellow-500 font-semibold text-center text-lg py-2 rounded-t-lg">SCAN QR CODE</div>
                 <div ref={qrRef} className="flex justify-center items-center my-4">
-                    <QRComponent size={250} bgColor="white" fgColor="black" value="john.doe@cit.edu" />
+                    <QRComponent size={250} bgColor="white" fgColor="black" value={useremail!} />
                 </div>
                 <div className="flex justify-center">
                     <button onClick={handleDownload} className="bg-yellow-500 py-2 px-4 rounded-lg shadow hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50">Download QR Code</button>
