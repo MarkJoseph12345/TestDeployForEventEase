@@ -121,7 +121,7 @@ const Sidebar = () => {
                         ))}
                     </div>
                     <div className="absolute bottom-0 mx-5 flex items-center gap-2" onClick={() => setOpenProfile(!openProfile)}>
-                        <img src={imageUrl || "/defaultpic.png"} className="rounded-full cursor-pointer object-fill tablet:h-20 tablet:w-20" />
+                        <img src={imageUrl || "/defaultpic.png"} className="rounded-full cursor-pointer object-fill w-16 h-16 tablet:h-20 tablet:w-20" />
                         <div className="font-semibold text-lg flex flex-col items-start tablet:text-2xl">
                             <p>{user!.firstName}</p>
                             <p>{user!.lastName}</p>
