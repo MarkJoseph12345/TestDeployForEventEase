@@ -100,12 +100,6 @@ const ManageEvents = () => {
 
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 0);
-    }, []);
-
     if (loading) {
         return <Loading />;
     }
