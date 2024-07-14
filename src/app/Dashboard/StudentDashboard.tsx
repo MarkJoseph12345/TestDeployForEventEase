@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { Event } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
-
-import { events } from "../../utils/testdata";
 import Sidebar from "../Comps/Sidebar";
 import { fetchEventPicture, getEvents } from "@/utils/apiCalls";
 import { formatDate, userdepartment } from "@/utils/data";
@@ -77,7 +75,7 @@ const StudentDasboard = () => {
         <p className="text-2xl font-semibold tablet:text-3xl">Hello, user</p>
         <p className="tablet:text-xl">Discover exciting events for your department!</p>
         <div className="w-full border-t my-4" />
-        <p className="text-2xl font-medium">Closest CSS Events</p>
+        <p className="text-2xl font-medium">Closest {userdepartment} Events</p>
         <div className="tablet:flex tablet:justify-center tablet:gap-5 tablet:flex-wrap">
           {error ? (
             <div className="flex flex-col items-center gap pt-2">

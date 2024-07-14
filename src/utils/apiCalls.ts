@@ -373,3 +373,64 @@ export const fetchEventPicture = async (eventid: number): Promise<string> => {
         return "";
     }
 };
+
+export const joinEvent = async (userId: number, eventId: number): Promise<boolean> => {
+    try {
+        const response = await fetch(`${API_ENDPOINTS.JOIN_EVENT}${userId}/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to join event');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error joining event:', error);
+        return false;
+    }
+};
+
+export const unjoinEvent = async (userId: number, eventId: number): Promise<boolean> => {
+    try {
+        const response = await fetch(`${API_ENDPOINTS.UNJOIN_EVENT}${userId}/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to unjoin event');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error unjoining event:', error);
+        return false;
+    }
+};
+
+export const getEventsJoinedByUser = async (userId: number): Promise<Event[]> => {
+    try {
+        const response = await fetch(`${API_ENDPOINTS.GET_EVENTS_JOINED_BY_USER}${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch events joined by user');
+        }
+
+        const events = await response.json();
+        return events;
+    } catch (error) {
+        console.error('Error fetching events joined by user:', error);
+        return [];
+    }
+};

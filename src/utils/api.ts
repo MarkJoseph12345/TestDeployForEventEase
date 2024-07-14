@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   DELETE_USER: `${BASE_URL}/api/v1/auth/user/deleteUser/`,
   UPDATE_USER: `${BASE_URL}/api/v1/auth/updateUser/`,
   JOIN_EVENT: `${BASE_URL}/api/v1/auth/userevent/joinEvent/`,
+  UNJOIN_EVENT: `${BASE_URL}/api/v1/auth/userevent/joinEvent/`,
   GET_EVENTS_JOINED_BY_USER: `${BASE_URL}/api/v1/auth/userevent/getAllEventsJoinedByUser/`,
   DELETE_EVENT: `${BASE_URL}/api/v1/auth/event/deleteEventById/`,
   GET_ATTENDEES: `${BASE_URL}/api/v1/auth/admin/getAttendanceByAllEvents`,
