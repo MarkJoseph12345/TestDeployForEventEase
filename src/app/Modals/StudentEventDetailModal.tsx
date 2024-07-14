@@ -85,7 +85,7 @@ const StudentEventDetailModal: React.FC<EventDetailModal> = ({ event, onClose, o
                 <div className="flex w-full justify-end">
                     <button
                         onClick={handleJoinUnjoin}
-                        className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md mt-4 self-end"
+                        className="bg-customYellow font-poppins font-bold px-4 py-2 rounded-md self-end my-4 mr-8"
                     >
                         {isJoined ? 'Unjoin' : 'Join'}
                     </button>

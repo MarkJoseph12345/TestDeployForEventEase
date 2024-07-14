@@ -141,8 +141,8 @@ const ManageEvent = ({ event, onClose }: EventDetailModal) => {
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
             <div className="bg-white p-2 rounded-md shadow-md w-11/12 max-h-[95%] overflow-auto relative laptop:max-w-[50rem]">
-                <div className="flex justify-end">
-                    <span className="sticky text-gray-500 font-bold text-2xl z-10 cursor-pointer" onClick={onClose}>✖</span>
+                <div className="flex justify-end sticky top-0">
+                    <span className="text-gray-500 font-bold text-2xl z-10 cursor-pointer" onClick={onClose}>✖</span>
                 </div>
                 <p className="text-2xl font-poppins font-bold text-center">Manage Event</p>
                 <div className="min-h-10 rounded-2xl mt-4 border-2 p-2 bg-customWhite  flex flex-col gap-5 ">
