@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { Event } from "../../utils/interfaces";
 import StudentEventDetailModal from "../Modals/StudentEventDetailModal";
-import { events } from "../../utils/testdata";
 import StudentEventsFilteredList from "../Comps/StudentEvents";
 import Sidebar from "../Comps/Sidebar";
 import Loading from "../Loader/Loading";
@@ -44,7 +43,7 @@ const AttendedEvents = () => {
                         </div>
                         <input type="search" className="block w-full p-2 ps-10 border rounded-md" placeholder="Search events..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
-                    <StudentEventsFilteredList events={events} searchTerm={searchTerm} onEventClick={handleEventClick} />
+                    {/* <StudentEventsFilteredList events={events} searchTerm={searchTerm} onEventClick={handleEventClick} /> */}
                 </div>
             </div>
             {selectedEvent && <StudentEventDetailModal event={selectedEvent} onClose={handleClosePopup} />}
