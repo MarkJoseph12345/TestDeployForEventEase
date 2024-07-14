@@ -34,13 +34,6 @@ const QRCode = () => {
         }
     };
 
-    const [loading, setLoading] = useState(true);
-
-    if (loading) {
-        return <Loading />;
-    }
-    
-
     return (
         <div className="flex flex-col h-screen">
         <Sidebar />
