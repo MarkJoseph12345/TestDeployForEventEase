@@ -42,8 +42,6 @@ const AdminEventDetailModal = ({ event, onClose }: EventDetailModal) => {
                             <p>{formatDate(event.eventEnds)}</p>
                         </div>
                     </div>
-
-
                 </div>
                 <div className="flex w-full justify-end">
                     <div className=" flex gap-3">
